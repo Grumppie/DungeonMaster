@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000">
+  <rect width="1600" height="1000" fill="#cbb48a"/>
+  <rect x="20" y="20" width="1560" height="960" rx="24" fill="#d9c5a0" stroke="#9f7e52" stroke-width="8"/>
+  <g opacity="0.35" fill="#8e6f47">
+    <path d="M188 251c112-107 213-145 332-107 64 20 91 74 150 91 84 24 167-19 248 5 72 22 94 97 188 110 93 13 190-46 282-36v385c-94-12-163 52-247 61-81 8-150-31-241-17-71 12-127 54-195 58-79 4-149-48-232-44-98 4-182 79-286 82V251z"/>
+    <path d="M905 184c54-43 106-61 162-56 41 3 79 25 121 27 39 2 78-12 120-2 45 11 79 52 128 58v143c-57-8-98-49-148-57-58-9-110 24-168 23-51-1-96-25-146-29-32-2-66 4-99 13-25-35-45-76-70-106 32-8 66-7 100-14z"/>
+    <path d="M420 720c73-25 137-9 186 22 38 24 72 58 116 71 52 15 106-3 158-4 65-2 128 19 193 15 77-5 149-42 226-45 85-4 165 37 250 25v98H152V742c89 16 181 9 268-22z"/>
+  </g>
+  <g opacity="0.28" stroke="#805f3d" stroke-width="4" fill="none">
+    <path d="M174 147c187 73 377 88 566 45 182-42 366-40 548 7 65 16 125 38 189 65"/>
+    <path d="M128 488c209 44 419 55 628 23 248-39 492-30 725 26"/>
+    <path d="M185 801c231-40 462-39 693 2 182 32 362 29 540-11"/>
+    <path d="M301 122c-45 223-62 448-51 676"/>
+    <path d="M698 99c6 232 1 463-15 694"/>
+    <path d="M1098 117c32 220 43 439 33 659"/>
+    <path d="M1429 182c-36 206-43 410-21 613"/>
+  </g>
+  <g opacity="0.35" stroke="#6f4f31" stroke-width="5" fill="none">
+    <circle cx="259" cy="208" r="92"/>
+    <circle cx="1332" cy="761" r="117"/>
+    <path d="M1240 220l126 82-84 123"/>
+    <path d="M547 625l72 53-41 83"/>
+  </g>
+  <g fill="#75583b" opacity="0.65">
+    <text x="202" y="189" font-size="36" font-family="Georgia, serif">The Ash Sea</text>
+    <text x="1047" y="177" font-size="30" font-family="Georgia, serif">Old Crown Reach</text>
+    <text x="651" y="562" font-size="42" font-family="Georgia, serif">Kingless March</text>
+    <text x="1179" y="806" font-size="34" font-family="Georgia, serif">Southward Reaches</text>
+  </g>
+</svg>

@@ -1,0 +1,3 @@
+{
+  "note": "Static seed copy for the browser demo. The running app clones initial-state.json into localStorage and resets from that clone after each finished duel."
+}

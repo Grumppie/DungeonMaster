@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>D&D Duel Demo</title>
+  <link rel="stylesheet" href="demo.css">
+</head>
+<body>
+  <div class="demo-shell">
+    <header class="demo-header">
+      <a class="back-link" href="index.html">Architecture</a>
+      <div class="header-main">
+        <div class="avatar-frame dm-frame">
+          <img src="assets/dm-avatar.svg" alt="Dungeon Master avatar">
+        </div>
+        <div class="title-block">
+          <p class="eyebrow">Dungeon Master</p>
+          <h1>Iron Quill Duel Table</h1>
+          <div class="header-status-row">
+            <span class="status-pill" id="stage-label">Awaiting Claims</span>
+            <span class="status-note" id="engagement-label">Engagement: Duel</span>
+            <span class="status-note" id="turn-banner">Turn: Pending</span>
+          </div>
+        </div>
+      </div>
+      <div class="initiative-panel">
+        <p class="eyebrow">Initiative</p>
+        <div id="initiative-order" class="initiative-order"></div>
+      </div>
+    </header>
+
+    <main class="main-grid">
+      <section class="dm-panel">
+        <div class="panel-head">
+          <div>
+            <p class="eyebrow">DM Screen</p>
+            <h2>Voice, Rules, and Session Control</h2>
+          </div>
+          <div class="status-box" id="status-box">Load your keys, then start the duel.</div>
+        </div>
+
+        <div class="bootstrap-note">
+          <p class="eyebrow">Bootstrap</p>
+          <p>The local API now injects the OpenAI and Deepgram config for this demo automatically.</p>
+        </div>
+
+        <div class="control-row">
+          <button id="begin-demo">Begin Demo Intro</button>
+          <button id="start-voice">Start Voice</button>
+          <button id="stop-voice" class="secondary">Stop Voice</button>
+          <button id="reset-session" class="secondary">Reset Session</button>
+          <button id="export-state" class="secondary">Export State</button>
+          <button id="export-log" class="secondary">Export Log</button>
+        </div>
+
+        <div class="transcript-grid">
+          <article class="transcript-card">
+            <p class="eyebrow">Live STT</p>
+            <h3>Interim Transcript</h3>
+            <p id="live-transcript" class="transcript-text">Deepgram live speech appears here.</p>
+          </article>
+          <article class="transcript-card">
+            <p class="eyebrow">Final STT</p>
+            <h3>Last Final Transcript</h3>
+            <p id="final-transcript" class="transcript-text">Finalized utterances appear here.</p>
+          </article>
+          <article class="transcript-card">
+            <p class="eyebrow">Hint</p>
+            <h3>Interaction Rule</h3>
+            <p id="hint-text" class="transcript-text">Say "Alden" or "Nyra" first or the DM will ignore the command.</p>
+          </article>
+        </div>
+
+        <div class="manual-block">
+          <label for="manual-command" class="eyebrow">Manual Text Turn</label>
+          <textarea id="manual-command" rows="3" placeholder='Example: Alden, I rage and attack with my greataxe.'></textarea>
+          <button id="send-command">Send Command</button>
+        </div>
+
+        <div class="log-panel">
+          <div class="panel-head compact">
+            <div>
+              <p class="eyebrow">Audit Trail</p>
+              <h3>DM Log</h3>
+            </div>
+            <span class="log-count" id="log-count">0 entries</span>
+          </div>
+          <div id="log-feed" class="log-feed"></div>
+        </div>
+      </section>
+
+      <aside class="side-panel">
+        <section class="side-card">
+          <p class="eyebrow">Encounter</p>
+          <h2 id="encounter-title">Duel at the Cartographer's Table</h2>
+          <p id="encounter-summary">Claim both heroes to start initiative. The duel begins at 20 feet.</p>
+        </section>
+
+        <section class="side-card">
+          <p class="eyebrow">Battlefield</p>
+          <div class="metric-row">
+            <span>Distance</span>
+            <strong id="distance-metric">20 ft</strong>
+          </div>
+          <div class="metric-row">
+            <span>Round</span>
+            <strong id="round-metric">0</strong>
+          </div>
+          <div class="metric-row">
+            <span>Conditions</span>
+            <strong id="effect-metric">None</strong>
+          </div>
+        </section>
+
+        <section class="side-card">
+          <p class="eyebrow">Pipeline</p>
+          <ul class="bullet-list">
+            <li>Deepgram STT streams speech and shows visible transcript.</li>
+            <li>Voice activity interrupts TTS and aborts pending inference.</li>
+            <li>OpenAI classifies intent and dramatizes resolved outcomes.</li>
+            <li>The local engine rolls, mutates HP, tracks slots, and logs the turn.</li>
+          </ul>
+        </section>
+      </aside>
+    </main>
+
+    <footer class="player-row">
+      <section id="player-card-alden" class="player-card"></section>
+      <section id="player-card-nyra" class="player-card"></section>
+    </footer>
+  </div>
+
+  <dialog id="sheet-modal" class="modal">
+    <div class="modal-shell">
+      <div class="panel-head compact">
+        <div>
+          <p class="eyebrow">Character Sheet</p>
+          <h2 id="sheet-title">Sheet</h2>
+        </div>
+        <button id="close-sheet" class="secondary">Close</button>
+      </div>
+      <div id="sheet-body" class="modal-body"></div>
+    </div>
+  </dialog>
+
+  <dialog id="spell-modal" class="modal">
+    <div class="modal-shell">
+      <div class="panel-head compact">
+        <div>
+          <p class="eyebrow">Spell Detail</p>
+          <h2 id="spell-title">Spell</h2>
+        </div>
+        <button id="close-spell" class="secondary">Close</button>
+      </div>
+      <div id="spell-body" class="modal-body"></div>
+    </div>
+  </dialog>
+
+  <audio id="tts-audio"></audio>
+  <script type="module" src="/demo.js"></script>
+</body>
+</html>

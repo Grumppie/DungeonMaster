@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#573122"/>
+      <stop offset="100%" stop-color="#1f130d"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="56" fill="url(#bg)"/>
+  <circle cx="256" cy="194" r="96" fill="#d1b078"/>
+  <path d="M135 396c29-63 86-94 121-94s93 31 122 94" fill="#4d271b"/>
+  <path d="M180 179c24-53 68-82 76-82s53 29 76 82" fill="#27150f"/>
+  <path d="M196 215c10 18 28 27 60 27 33 0 48-9 60-27" stroke="#2b1a12" stroke-width="14" fill="none" stroke-linecap="round"/>
+  <circle cx="221" cy="197" r="10" fill="#23130d"/>
+  <circle cx="291" cy="197" r="10" fill="#23130d"/>
+  <path d="M218 143h77" stroke="#c9a469" stroke-width="12" stroke-linecap="round"/>
+  <path d="M96 440h320" stroke="#c9a469" stroke-width="14" stroke-linecap="round"/>
+  <text x="256" y="469" text-anchor="middle" font-family="Georgia, serif" font-size="42" fill="#f7ead0">DM</text>
+</svg>

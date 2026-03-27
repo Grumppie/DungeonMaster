@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#65303a"/>
+      <stop offset="100%" stop-color="#261219"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="56" fill="url(#bg)"/>
+  <circle cx="256" cy="192" r="96" fill="#d39a89"/>
+  <path d="M152 421c25-71 74-109 104-109s80 38 104 109" fill="#4f2231"/>
+  <path d="M170 170c12-47 47-95 86-95s74 48 86 95" fill="#31141d"/>
+  <path d="M182 112c-16-44-63-52-88-14 18 7 42 28 54 58" fill="#8b4a58"/>
+  <path d="M330 112c16-44 63-52 88-14-18 7-42 28-54 58" fill="#8b4a58"/>
+  <path d="M203 226c14 14 33 21 53 21 21 0 40-7 54-21" stroke="#3a1824" stroke-width="12" fill="none" stroke-linecap="round"/>
+  <circle cx="224" cy="193" r="10" fill="#221015"/>
+  <circle cx="288" cy="193" r="10" fill="#221015"/>
+  <path d="M225 266l16 20 15-20" stroke="#5b2434" stroke-width="10" fill="none" stroke-linecap="round"/>
+  <rect x="363" y="111" width="17" height="178" rx="8" fill="#f0d38f" transform="rotate(18 371 200)"/>
+  <circle cx="410" cy="112" r="28" fill="#c95a56"/>
+  <text x="256" y="476" text-anchor="middle" font-family="Georgia, serif" font-size="42" fill="#f8e4d6">NYRA</text>
+</svg>

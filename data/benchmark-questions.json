@@ -1,0 +1,166 @@
+[
+  {
+    "id": "alden-combat-profile",
+    "category": "demo-character",
+    "difficulty": "medium",
+    "question": "Give Alden Voss's combat profile for this duel: armor class, hit points, speed, initiative modifier, and greataxe attack and damage.",
+    "must_include_all": ["14", "32", "30", "+2", "+5", "1d12+3"],
+    "must_include_any": [["armor class", "ac"], ["hit points", "hp"], ["speed"], ["initiative"], ["greataxe"], ["slashing"]],
+    "source_hint": "docs"
+  },
+  {
+    "id": "nyra-casting-profile",
+    "category": "demo-character",
+    "difficulty": "medium",
+    "question": "List Nyra Vale's spell attack bonus, spell save DC, and 2nd-level spell slots for this duel.",
+    "must_include_all": ["+5", "13", "2"],
+    "must_include_any": [["spell attack"], ["save dc", "spell save dc"], ["2nd-level", "second-level"]],
+    "source_hint": "docs"
+  },
+  {
+    "id": "rage-package",
+    "category": "demo-rules",
+    "difficulty": "hard",
+    "question": "What does Rage do for Alden Voss in this duel, including how he starts it and the mechanical benefits it gives him?",
+    "must_include_all": ["bonus action", "+2", "bludgeoning", "piercing", "slashing"],
+    "must_include_any": [["rage"], ["melee damage", "extra damage"], ["resistance", "resists"]],
+    "source_hint": "rules"
+  },
+  {
+    "id": "reckless-attack-tradeoff",
+    "category": "demo-rules",
+    "difficulty": "hard",
+    "question": "Explain the Reckless Attack tradeoff for Alden Voss in this duel.",
+    "must_include_all": ["advantage", "melee attack", "attackers", "until his next turn"],
+    "must_include_any": [["reckless attack"], ["Alden"], ["against Alden", "against him"]],
+    "source_hint": "rules"
+  },
+  {
+    "id": "hold-person-resolution",
+    "category": "demo-rules",
+    "difficulty": "hard",
+    "question": "In this duel, what happens if Nyra Vale successfully casts Hold Person on a humanoid target, and what ongoing state is involved?",
+    "must_include_all": ["concentration", "paralyzes", "humanoid"],
+    "must_include_any": [["failed wisdom save", "wisdom save"], ["hold person"], ["required saving throw", "saving throw"]],
+    "source_hint": "rules"
+  },
+  {
+    "id": "damage-state-followup",
+    "category": "demo-rules",
+    "difficulty": "hard",
+    "question": "Name the state changes or checks the duel demo tracks after a creature takes damage, especially for concentration and being dropped to 0 hit points.",
+    "must_include_all": ["concentration", "constitution save", "0 hp", "death saves"],
+    "must_include_any": [["failed constitution save", "failed con save"], ["combat continues"], ["downed creature", "downed"]],
+    "source_hint": "rules"
+  },
+  {
+    "id": "opportunity-attack-trigger",
+    "category": "demo-rules",
+    "difficulty": "medium",
+    "question": "When does an opportunity attack trigger in this duel?",
+    "must_include_all": ["leaves melee reach", "without disengage"],
+    "must_include_any": [["opportunity attack", "opportunity attacks"], ["trigger"]],
+    "source_hint": "rules"
+  },
+  {
+    "id": "arena-assumptions",
+    "category": "demo-environment",
+    "difficulty": "medium",
+    "question": "Summarize the duel arena assumptions used by this demo.",
+    "must_include_all": ["20 feet", "no cover"],
+    "must_include_any": [["no map grid", "no grid"], ["single duel arena"], ["level 3"]],
+    "source_hint": "docs"
+  },
+  {
+    "id": "dagger-weapon-profile",
+    "category": "demo-character",
+    "difficulty": "medium",
+    "question": "What are the key combat stats and properties of Nyra Vale's dagger in this demo?",
+    "must_include_all": ["+3", "1d4+1", "piercing", "20/60"],
+    "must_include_any": [["finesse"], ["light"], ["thrown"], ["dagger"]],
+    "source_hint": "docs"
+  },
+  {
+    "id": "armor-don-doff-times",
+    "category": "phb-rules",
+    "difficulty": "hard",
+    "question": "According to the provided Player's Handbook, what are the don and doff times for light armor, medium armor, heavy armor, and a shield?",
+    "must_include_all": ["1 minute", "5 minutes", "10 minutes", "1 action", "5 minutes"],
+    "must_include_any": [["light armor"], ["medium armor"], ["heavy armor"], ["shield"], ["don"], ["doff"]],
+    "source_hint": "phb"
+  },
+  {
+    "id": "weapon-proficiency-distinction",
+    "category": "phb-rules",
+    "difficulty": "hard",
+    "question": "Using the provided Player's Handbook, explain the distinction between simple and martial weapons and how proficiency affects attack rolls.",
+    "must_include_all": ["simple", "martial", "proficiency bonus", "attack roll"],
+    "must_include_any": [["commoners"], ["specialized training", "training"], ["lack proficiency", "without proficiency"]],
+    "source_hint": "phb"
+  },
+  {
+    "id": "barbarian-and-sorcerer-comparison",
+    "category": "cross-source",
+    "difficulty": "hard",
+    "question": "Compare Alden Voss and Nyra Vale as duelants by giving Alden's main melee profile and Nyra's main spellcasting profile.",
+    "must_include_all": ["greataxe", "+5", "1d12+3", "spell attack", "13", "2nd-level"],
+    "must_include_any": [["Alden"], ["Nyra"], ["armor class", "ac"], ["spell slots"], ["barbarian"], ["sorcerer"]],
+    "source_hint": "docs"
+  },
+  {
+    "id": "bardic-backup-dancers",
+    "category": "adjudication",
+    "difficulty": "hard",
+    "question": "Does bardic magic get an actual mechanical bonus from backup dancers helping the bard, or is that just flavor unless the GM grants something?",
+    "must_include_any": [["no automatic bonus", "no inherent bonus", "no rules bonus"], ["backup dancers"], ["flavor"], ["gm grants", "dm grants", "dm discretion"]],
+    "source_hint": "adjudication"
+  },
+  {
+    "id": "in-world-tabletop-games",
+    "category": "canon-lore",
+    "difficulty": "hard",
+    "question": "Do D&D characters canonically play D&D or an obvious in-world equivalent, or is that mostly something a table invents for its own setting?",
+    "must_include_any": [["no core canon game", "no standard canon game", "no broadly established canon"], ["table can invent", "dm can invent", "setting-specific"], ["in-world game", "equivalent"]],
+    "source_hint": "canon"
+  },
+  {
+    "id": "invisibility-and-sound",
+    "category": "adjudication",
+    "difficulty": "hard",
+    "question": "If a bard uses illusion magic to insult a local lord, then uses invisibility to escape, is it fair for guards to just capture them 'because of sound' even if the bard rolled very high on Stealth?",
+    "must_include_any": [["invisibility doesn't silence", "invisibility is not silence", "still makes sound"], ["stealth should matter", "high stealth should matter"], ["guards can search", "can track by sound", "can guess the location"], ["not automatic capture", "not automatic", "too much"]],
+    "source_hint": "adjudication"
+  },
+  {
+    "id": "vicious-mockery-quality",
+    "category": "adjudication",
+    "difficulty": "medium",
+    "question": "Does the quality of the insult make Vicious Mockery mechanically stronger, or is the wording mostly flavor unless the GM house-rules otherwise?",
+    "must_include_any": [["no mechanical bonus", "doesn't mechanically matter", "no rules change"], ["flavor"], ["vicious mockery"], ["house-rule", "dm discretion"]],
+    "source_hint": "adjudication"
+  },
+  {
+    "id": "vicious-mockery-reality-break",
+    "category": "adjudication",
+    "difficulty": "medium",
+    "question": "If Vicious Mockery kills a generic foe after the bard calls it a mere token piece in a larger game, does the creature disappear because it realized reality, or is that just flavor layered over psychic damage?",
+    "must_include_any": [["just flavor", "flavor"], ["psychic damage"], ["does not disappear", "doesn't disappear", "not by the rules"], ["dm can narrate", "gm can narrate"]],
+    "source_hint": "adjudication"
+  },
+  {
+    "id": "harpoon-ledges-and-airships",
+    "category": "adjudication",
+    "difficulty": "hard",
+    "question": "Are harpoons a good rules-supported way to yank enemies off high ledges or reel in flying targets from an airship, or is that mostly improvised combat adjudication?",
+    "must_include_any": [["not standard rules", "not a standard option", "mostly improvised"], ["grapple", "shove", "improvised"], ["dm adjudication", "gm adjudication"], ["harpoon"]],
+    "source_hint": "adjudication"
+  },
+  {
+    "id": "heat-metal-ball-bearings",
+    "category": "rules-interpretation",
+    "difficulty": "hard",
+    "question": "If someone drops 1,000 ball bearings and casts Heat Metal, does the spell heat all of them or only one object?",
+    "must_include_any": [["one object", "just one object", "only one"], ["not all"], ["manufactured metal object", "single object"], ["ball bearings", "ball bearing"]],
+    "source_hint": "rules-interpretation"
+  }
+]

@@ -1,0 +1,6 @@
+node_modules/
+dist/
+.cache/
+data/memory-index-cache.json
+convex/_generated/
+.env.local

@@ -1,0 +1,334 @@
+{
+  "meta": {
+    "title": "Duel at the Cartographer's Table",
+    "ruleset": "D&D 5e 2014 PHB-style strict duel demo",
+    "startingDistanceFeet": 20
+  },
+  "combat": {
+    "stage": "awaiting_claims",
+    "claimedCount": 0,
+    "round": 0,
+    "distanceFeet": 20,
+    "turnOrder": [],
+    "activeTurnIndex": 0,
+    "activeCharacterId": null,
+    "winnerId": null
+  },
+  "characters": {
+    "alden": {
+      "id": "alden",
+      "avatar": "assets/alden-avatar.svg",
+      "name": "Alden Voss",
+      "aliases": ["alden", "alden voss", "alden vos", "human barbarian", "barbarian"],
+      "claimed": false,
+      "race": "Human",
+      "class": "Barbarian",
+      "subclass": "Path of the Berserker",
+      "level": 3,
+      "proficiencyBonus": 2,
+      "speed": 30,
+      "armorClass": 14,
+      "maxHp": 32,
+      "currentHp": 32,
+      "tempHp": 0,
+      "initiativeModifier": 2,
+      "passivePerception": 13,
+      "hitDice": "3d12",
+      "abilityScores": {
+        "str": 16,
+        "dex": 15,
+        "con": 14,
+        "int": 9,
+        "wis": 13,
+        "cha": 11
+      },
+      "abilityModifiers": {
+        "str": 3,
+        "dex": 2,
+        "con": 2,
+        "int": -1,
+        "wis": 1,
+        "cha": 0
+      },
+      "savingThrows": {
+        "str": 5,
+        "dex": 2,
+        "con": 4,
+        "int": -1,
+        "wis": 1,
+        "cha": 0
+      },
+      "skills": {
+        "athletics": 5,
+        "intimidation": 2,
+        "perception": 3,
+        "survival": 3
+      },
+      "resistances": [],
+      "features": [
+        "Rage (3/day, +2 melee damage, resistance to bludgeoning, piercing, and slashing while active)",
+        "Unarmored Defense",
+        "Reckless Attack",
+        "Danger Sense",
+        "Frenzy listed on sheet but not surfaced as a default quick action"
+      ],
+      "equipment": {
+        "primaryWeapon": {
+          "name": "Greataxe",
+          "attackBonus": 5,
+          "damage": "1d12+3",
+          "criticalDamage": "2d12+3",
+          "damageType": "slashing",
+          "reachFeet": 5,
+          "melee": true,
+          "canThrow": false,
+          "throwRange": {
+            "normal": 0,
+            "long": 0
+          }
+        },
+        "weapons": [
+          {
+            "name": "Greataxe",
+            "attackBonus": 5,
+            "damage": "1d12+3",
+            "criticalDamage": "2d12+3",
+            "damageType": "slashing",
+            "reachFeet": 5,
+            "melee": true,
+            "canThrow": false,
+            "throwRange": {
+              "normal": 0,
+              "long": 0
+            }
+          }
+        ]
+      },
+      "resources": {
+        "actionAvailable": true,
+        "bonusActionAvailable": true,
+        "reactionAvailable": true,
+        "movementRemaining": 30,
+        "rage": {
+          "max": 3,
+          "remaining": 3,
+          "damageBonus": 2,
+          "active": false
+        }
+      },
+      "status": {
+        "conditions": [],
+        "initiativeRoll": null,
+        "concentrating": null,
+        "recklessAgainst": false,
+        "recklessExpiresOnTurnStart": false,
+        "tookDamageSinceTurnStart": false,
+        "madeHostileAttackThisTurn": false,
+        "downed": false,
+        "stable": false,
+        "dead": false,
+        "deathSaves": {
+          "successes": 0,
+          "failures": 0
+        }
+      },
+      "spells": {
+        "all": []
+      }
+    },
+    "nyra": {
+      "id": "nyra",
+      "avatar": "assets/nyra-avatar.svg",
+      "name": "Nyra Vale",
+      "aliases": ["nyra", "nyra vale", "tiefling sorcerer", "sorcerer", "nira"],
+      "claimed": false,
+      "race": "Tiefling",
+      "class": "Sorcerer",
+      "subclass": "Draconic Bloodline",
+      "level": 3,
+      "proficiencyBonus": 2,
+      "speed": 30,
+      "armorClass": 14,
+      "maxHp": 23,
+      "currentHp": 23,
+      "tempHp": 0,
+      "initiativeModifier": 1,
+      "passivePerception": 10,
+      "hitDice": "3d6",
+      "abilityScores": {
+        "str": 8,
+        "dex": 13,
+        "con": 14,
+        "int": 13,
+        "wis": 10,
+        "cha": 17
+      },
+      "abilityModifiers": {
+        "str": -1,
+        "dex": 1,
+        "con": 2,
+        "int": 1,
+        "wis": 0,
+        "cha": 3
+      },
+      "savingThrows": {
+        "str": -1,
+        "dex": 1,
+        "con": 4,
+        "int": 1,
+        "wis": 0,
+        "cha": 5
+      },
+      "skills": {
+        "arcana": 3,
+        "deception": 5,
+        "insight": 2,
+        "persuasion": 5
+      },
+      "resistances": ["fire"],
+      "features": [
+        "Draconic Resilience",
+        "Spellcasting",
+        "Font of Magic (3 sorcery points)",
+        "Metamagic known on sheet, not surfaced as default quick action",
+        "Darkvision",
+        "Fire Resistance",
+        "Thaumaturgy cantrip from race"
+      ],
+      "equipment": {
+        "primaryWeapon": {
+          "name": "Dagger",
+          "attackBonus": 3,
+          "damage": "1d4+1",
+          "criticalDamage": "2d4+1",
+          "damageType": "piercing",
+          "reachFeet": 5,
+          "melee": true,
+          "canThrow": true,
+          "throwRange": {
+            "normal": 20,
+            "long": 60
+          }
+        },
+        "weapons": [
+          {
+            "name": "Dagger",
+            "attackBonus": 3,
+            "damage": "1d4+1",
+            "criticalDamage": "2d4+1",
+            "damageType": "piercing",
+            "reachFeet": 5,
+            "melee": true,
+            "canThrow": true,
+            "throwRange": {
+              "normal": 20,
+              "long": 60
+            }
+          }
+        ]
+      },
+      "spellcasting": {
+        "ability": "Charisma",
+        "attackBonus": 5,
+        "saveDc": 13
+      },
+      "resources": {
+        "actionAvailable": true,
+        "bonusActionAvailable": true,
+        "reactionAvailable": true,
+        "movementRemaining": 30,
+        "sorceryPoints": 3,
+        "spellSlots": {
+          "1": 4,
+          "2": 2
+        }
+      },
+      "status": {
+        "conditions": [],
+        "initiativeRoll": null,
+        "concentrating": null,
+        "recklessAgainst": false,
+        "recklessExpiresOnTurnStart": false,
+        "tookDamageSinceTurnStart": false,
+        "madeHostileAttackThisTurn": false,
+        "downed": false,
+        "stable": false,
+        "dead": false,
+        "deathSaves": {
+          "successes": 0,
+          "failures": 0
+        }
+      },
+      "spells": {
+        "all": [
+          {
+            "name": "Fire Bolt",
+            "level": 0,
+            "levelLabel": "Cantrip",
+            "castingTime": "1 action",
+            "range": "120 feet",
+            "duration": "Instantaneous",
+            "attackOrSave": "Ranged spell attack",
+            "components": "V, S",
+            "summary": "Ranged fire cantrip dealing 1d10 fire on a hit."
+          },
+          {
+            "name": "Ray of Frost",
+            "level": 0,
+            "levelLabel": "Cantrip",
+            "castingTime": "1 action",
+            "range": "60 feet",
+            "duration": "Instantaneous",
+            "attackOrSave": "Ranged spell attack",
+            "components": "V, S",
+            "summary": "Ranged cold cantrip dealing 1d8 cold and slowing the target by 10 feet until Nyra's next turn."
+          },
+          {
+            "name": "Magic Missile",
+            "level": 1,
+            "levelLabel": "1st-level Evocation",
+            "castingTime": "1 action",
+            "range": "120 feet",
+            "duration": "Instantaneous",
+            "attackOrSave": "No attack roll, no save",
+            "components": "V, S",
+            "summary": "Three force darts strike automatically for 1d4+1 each."
+          },
+          {
+            "name": "Burning Hands",
+            "level": 1,
+            "levelLabel": "1st-level Evocation",
+            "castingTime": "1 action",
+            "range": "Self (15-foot cone)",
+            "duration": "Instantaneous",
+            "attackOrSave": "Dexterity save",
+            "components": "V, S",
+            "summary": "A close cone of flame deals 3d6 fire, half on a successful Dexterity save."
+          },
+          {
+            "name": "Scorching Ray",
+            "level": 2,
+            "levelLabel": "2nd-level Evocation",
+            "castingTime": "1 action",
+            "range": "120 feet",
+            "duration": "Instantaneous",
+            "attackOrSave": "Three ranged spell attacks",
+            "components": "V, S",
+            "summary": "Three separate rays each deal 2d6 fire on a hit."
+          },
+          {
+            "name": "Hold Person",
+            "level": 2,
+            "levelLabel": "2nd-level Enchantment",
+            "castingTime": "1 action",
+            "range": "60 feet",
+            "duration": "Concentration, up to 1 minute",
+            "attackOrSave": "Wisdom save",
+            "components": "V, S, M",
+            "summary": "Humanoid target becomes paralyzed on a failed Wisdom save and repeats the save at the end of each turn."
+          }
+        ]
+      }
+    }
+  }
+}
