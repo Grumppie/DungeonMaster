@@ -16,8 +16,8 @@ export function selectDmHistory(sceneRuntime) {
   return (sceneRuntime?.messages || []).filter((message) => message.speakerType === "dm" && message.content?.trim());
 }
 
-export function selectNonDmTranscriptHistory(sceneRuntime) {
-  return (sceneRuntime?.transcriptHistory || []).filter((entry) => entry.speakerType !== "dm");
+export function selectTranscriptAudioHistory(sceneRuntime) {
+  return (sceneRuntime?.transcriptHistory || []).filter((entry) => entry.audioUrl);
 }
 
 export function selectSpeakerName(session, sceneRuntime, latestDmMessage) {

@@ -6,6 +6,58 @@ import {
   generateDmReply,
   normalizeDmReply,
 } from "./dmResponseGraph";
+import { synthesizeAndPersistVoiceEvent } from "../../../voice";
+
+const DM_VOICE_PROFILE_KEY = "dm-narrator";
+const DM_VOICE_STYLE = "Measured dungeon master narration with clear pacing and grounded scene authority.";
+const DM_VOICE_PROVIDER = "deepgram";
+
+function getDmVoiceId() {
+  return process.env.DEEPGRAM_DM_VOICE || process.env.DEEPGRAM_VOICE || "aura-2-thalia-en";
+}
+
+function extractSpeakableChunks(buffer, force = false) {
+  const chunks = [];
+  let remaining = buffer;
+
+  while (remaining.length) {
+    const sentenceMatch = remaining.match(/^([\s\S]*?[.!?])(\s+|$)/);
+    if (sentenceMatch && sentenceMatch[1].trim().length >= 12) {
+      chunks.push(sentenceMatch[1].trim());
+      remaining = remaining.slice(sentenceMatch[0].length);
+      continue;
+    }
+
+    const softBreakIndex = remaining.search(/[;:]\s/);
+    if (softBreakIndex >= 56) {
+      const chunk = remaining.slice(0, softBreakIndex + 1).trim();
+      if (chunk) {
+        chunks.push(chunk);
+      }
+      remaining = remaining.slice(softBreakIndex + 1).trimStart();
+      continue;
+    }
+
+    if (remaining.length >= 140) {
+      const window = remaining.slice(0, 140);
+      const splitAt = Math.max(window.lastIndexOf(" "), window.lastIndexOf("-"));
+      const chunk = remaining.slice(0, splitAt > 64 ? splitAt : 140).trim();
+      if (chunk) {
+        chunks.push(chunk);
+      }
+      remaining = remaining.slice(chunk.length).trimStart();
+      continue;
+    }
+
+    if (force && remaining.trim()) {
+      chunks.push(remaining.trim());
+      remaining = "";
+    }
+    break;
+  }
+
+  return { chunks, remaining };
+}
 
 async function retrieveDmContext(ctx, { playerPrompt, runtime, promptMode }) {
   try {
@@ -29,7 +81,63 @@ async function streamDmReply({
   playerName,
   retrieval,
   draftMessageId,
+  sessionId,
+  visibility,
+  targetParticipantId,
 }) {
+  let hasQueuedSpeech = false;
+  let speechBuffer = "";
+  let speechQueue = Promise.resolve();
+
+  function queueSpeech(chunks) {
+    if (!chunks.length) {
+      return;
+    }
+
+    if (!hasQueuedSpeech) {
+      hasQueuedSpeech = true;
+      speechQueue = speechQueue.then(() =>
+        ctx.runMutation(internal.sceneRuntime.setDmStatus, {
+          sessionId,
+          dmStatus: "speaking",
+        })
+      );
+    }
+
+    for (const chunk of chunks) {
+      speechQueue = speechQueue
+        .then(() =>
+          synthesizeAndPersistVoiceEvent(ctx, {
+            sessionId,
+            sceneMessageId: draftMessageId,
+            speakerType: "dm",
+            speakerName: "DM",
+            transcript: chunk,
+            provider: DM_VOICE_PROVIDER,
+            voiceId: getDmVoiceId(),
+            voiceProfileKey: DM_VOICE_PROFILE_KEY,
+            stylePrompt: DM_VOICE_STYLE,
+            visibility,
+            targetParticipantId,
+            disableThrottle: true,
+          })
+        )
+        .catch((error) => {
+          console.error("DM voice synthesis failed.", error);
+        });
+    }
+  }
+
+  async function finalizeSpeech(forceText = "") {
+    if (forceText?.trim()) {
+      speechBuffer += forceText;
+    }
+    const { chunks, remaining } = extractSpeakableChunks(speechBuffer, true);
+    speechBuffer = remaining;
+    queueSpeech(chunks);
+    await speechQueue;
+  }
+
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
     const fallback = await generateDmReply({
@@ -45,6 +153,7 @@ async function streamDmReply({
       messageId: draftMessageId,
       content: normalized,
     });
+    await finalizeSpeech(normalized);
     return normalized;
   }
 
@@ -142,7 +251,11 @@ async function streamDmReply({
         if (parsed.type === "response.output_text.delta" && parsed.delta) {
           accumulated += parsed.delta;
           flushBuffer += parsed.delta;
+          speechBuffer += parsed.delta;
           await flushChunk(false);
+          const { chunks, remaining } = extractSpeakableChunks(speechBuffer, false);
+          speechBuffer = remaining;
+          queueSpeech(chunks);
         }
       }
     }
@@ -154,6 +267,7 @@ async function streamDmReply({
     messageId: draftMessageId,
     content: normalized,
   });
+  await finalizeSpeech();
   return normalized;
 }
 
@@ -208,6 +322,9 @@ export async function respondToPromptAction(ctx, { sessionId, playerMessageId, p
       playerName: playerMessage.speakerLabel,
       retrieval,
       draftMessageId,
+      sessionId,
+      visibility: playerMessage.visibility || "party",
+      targetParticipantId: playerMessage.visibility === "private" ? playerMessage.participantId : undefined,
     });
 
     if (runtime.activeScene.npcBriefs?.length) {

@@ -452,6 +452,7 @@ export default defineSchema({
 
   voiceEvents: defineTable({
     roomId: v.id("gameSessions"),
+    sceneMessageId: v.optional(v.id("sceneMessages")),
     speakerType: v.union(v.literal("dm"), v.literal("npc")),
     speakerId: v.optional(v.string()),
     speakerName: v.string(),
@@ -465,7 +466,8 @@ export default defineSchema({
     createdAt: v.number(),
   })
     .index("by_room", ["roomId", "createdAt"])
-    .index("by_room_target", ["roomId", "targetParticipantId", "createdAt"]),
+    .index("by_room_target", ["roomId", "targetParticipantId", "createdAt"])
+    .index("by_room_message", ["roomId", "sceneMessageId", "createdAt"]),
 
   voiceCaches: defineTable({
     cacheKey: v.string(),

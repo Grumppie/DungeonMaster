@@ -4,7 +4,6 @@ import { PlayerHud } from "../hud/PlayerHud";
 import { ActionTray } from "../combat/ActionTray";
 import { SheetDrawer } from "../sheet/SheetDrawer";
 import { AudioBroadcastPlayer } from "../audio/AudioBroadcastPlayer";
-import { LiveDmAudioStreamer } from "../audio/LiveDmAudioStreamer";
 import { SelectionModal } from "./SelectionModal";
 import { RuntimeHistoryModals } from "./RuntimeHistoryModals";
 import { RuntimeCommandDeck } from "./RuntimeCommandDeck";
@@ -50,7 +49,7 @@ export function RuntimeShell({
     latestDmMessage,
     dmHistoryItems,
     partyHistory,
-    nonDmTranscriptHistory,
+    transcriptAudioHistory,
     speakerName,
   } = useRuntimeController({ session, adventure, sceneRuntime });
   const dmStatus = session?.dmStatus || "idle";
@@ -152,14 +151,7 @@ export function RuntimeShell({
         onShareSceneMessage={onShareSceneMessage}
       />
 
-      <LiveDmAudioStreamer
-        messageId={latestDmMessage?._id}
-        content={latestDmMessage?.content || ""}
-        dmStatus={dmStatus}
-        enabled={Boolean(latestDmMessage?.content?.trim())}
-      />
-
-      <AudioBroadcastPlayer history={nonDmTranscriptHistory} />
+      <AudioBroadcastPlayer history={transcriptAudioHistory} />
 
       <SelectionModal
         selectedCell={selectedCell}

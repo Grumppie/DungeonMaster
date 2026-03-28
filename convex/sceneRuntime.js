@@ -83,6 +83,23 @@ export const shareSceneMessage = mutation({
       visibility: "party",
       targetParticipantId: undefined,
     });
+
+    const voiceEvents = await ctx.db
+      .query("voiceEvents")
+      .withIndex("by_room", (q) => q.eq("roomId", message.sessionId))
+      .order("desc")
+      .take(40);
+    const matchingVoiceEvents = voiceEvents.filter(
+      (entry) => entry.sceneMessageId === message._id,
+    );
+    await Promise.all(
+      matchingVoiceEvents.map((entry) =>
+        ctx.db.patch(entry._id, {
+          visibility: "party",
+          targetParticipantId: undefined,
+        }),
+      ),
+    );
     return { shared: true };
   },
 });
@@ -156,6 +173,7 @@ export const replaceSceneMessage = internalMutation({
 export const persistVoiceEvent = internalMutation({
   args: {
     sessionId: v.id("gameSessions"),
+    sceneMessageId: v.optional(v.id("sceneMessages")),
     speakerType: v.union(v.literal("dm"), v.literal("npc")),
     speakerId: v.optional(v.string()),
     speakerName: v.string(),

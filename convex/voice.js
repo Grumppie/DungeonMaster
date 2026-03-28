@@ -88,7 +88,7 @@ export async function synthesizeAndPersistVoiceEvent(ctx, args) {
       entry.provider === args.provider &&
       entry.speakerName === args.speakerName,
   );
-  const shouldThrottleAudio = recentEvents.length >= 4;
+  const shouldThrottleAudio = args.disableThrottle ? false : recentEvents.length >= 4;
   const cacheKey = buildCacheKey({
     provider: args.provider,
     voiceId: args.voiceId,
@@ -118,6 +118,7 @@ export async function synthesizeAndPersistVoiceEvent(ctx, args) {
 
   await ctx.runMutation(internal.sceneRuntime.persistVoiceEvent, {
     sessionId: args.sessionId,
+    sceneMessageId: args.sceneMessageId,
     speakerType: args.speakerType,
     speakerId: args.speakerId,
     speakerName: args.speakerName,

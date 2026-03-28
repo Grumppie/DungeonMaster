@@ -60,6 +60,7 @@ export async function replaceSceneMessageContent(ctx, args) {
 export async function persistVoiceEventRecord(ctx, args) {
   return ctx.db.insert("voiceEvents", {
     roomId: args.sessionId,
+    sceneMessageId: args.sceneMessageId,
     speakerType: args.speakerType,
     speakerId: args.speakerId,
     speakerName: args.speakerName,
