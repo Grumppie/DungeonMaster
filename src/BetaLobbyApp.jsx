@@ -1,6 +1,10 @@
 import React from "react";
 import { SignInButton, UserButton } from "@clerk/react";
 
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+
 import { RoomEntryPanel } from "./features/rooms/RoomEntryPanel";
 import { LobbyScreen } from "./features/lobby/LobbyScreen";
 import { RuntimeShell } from "./features/runtime/RuntimeShell";
@@ -8,68 +12,105 @@ import { useSessionRuntime } from "./features/runtime/useSessionRuntime";
 
 function AuthGate() {
   return (
-    <div className="panel benchmark-notes">
-      <p className="eyebrow">Authentication</p>
-      <h2>Sign In To Create Or Join A Session</h2>
-      <p>The multiplayer runtime uses Clerk + Convex. Sign in first, then create a room or join one from a code or public list.</p>
-      <SignInButton mode="modal">
-        <button type="button">Sign In</button>
-      </SignInButton>
-    </div>
+    <Card className="border-border/60 bg-card/95 shadow-sm">
+      <CardHeader className="space-y-3">
+        <Badge variant="secondary" className="w-fit rounded-full px-3 py-1">Authentication</Badge>
+        <CardTitle className="font-heading text-2xl tracking-tight">Sign in to create or join a session</CardTitle>
+        <CardDescription className="max-w-2xl text-sm leading-6">
+          The multiplayer runtime uses Clerk and Convex. Sign in first, then create a room or jump in through a public table.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <SignInButton mode="modal">
+          <Button type="button" size="lg" className="rounded-2xl">Sign in</Button>
+        </SignInButton>
+      </CardContent>
+    </Card>
   );
 }
 
 function ConvexAuthGate({ authDebug }) {
   return (
-    <div className="panel benchmark-notes">
-      <p className="eyebrow">Backend Auth</p>
-      <h2>Connecting To Convex</h2>
-      <p>Your Clerk session is ready, but the Convex token handshake is still loading.</p>
-      {authDebug ? <p className="beta-copy">Token source: {authDebug.tokenSource || "unknown"}</p> : null}
-    </div>
+    <Card className="border-border/60 bg-card/95 shadow-sm">
+      <CardHeader className="space-y-3">
+        <Badge variant="secondary" className="w-fit rounded-full px-3 py-1">Backend auth</Badge>
+        <CardTitle className="font-heading text-2xl tracking-tight">Connecting to Convex</CardTitle>
+        <CardDescription className="text-sm leading-6">
+          Your Clerk session is ready, but the Convex token handshake is still loading.
+        </CardDescription>
+      </CardHeader>
+      {authDebug ? (
+        <CardContent>
+          <p className="text-sm text-muted-foreground">Token source: {authDebug.tokenSource || "unknown"}</p>
+        </CardContent>
+      ) : null}
+    </Card>
   );
 }
 
 export default function BetaLobbyApp() {
   const runtime = useSessionRuntime();
   const { auth, data, state, actions } = runtime;
-  const { session } = data;
+  const { session, currentParticipant } = data;
+  const hasJoinedSession = Boolean(session && currentParticipant);
 
   return (
-    <div className="react-demo-shell benchmark-home">
-      {!session ? (
-        <section className="overview-band">
-          <div>
-            <p className="eyebrow">Mobile-First Multiplayer Beta</p>
-            <h1>Clash-Royale Style D&amp;D Runtime</h1>
-            <p className="overview-copy">
-              Create public or private rooms, keep player identity hidden behind character names, and drop into a DM-generated tactical run with a shared map, live transcript, and fixed combat controls.
-            </p>
-          </div>
-          <div className="overview-chips">
-            <span className="status-pill">React</span>
-            <span className="status-pill">Convex</span>
-            <span className="status-pill">LangGraph</span>
-            <span className="status-pill">Deepgram</span>
-            <span className="status-pill">ElevenLabs</span>
-            {auth.isSignedIn ? <UserButton /> : null}
+    <div className="mx-auto min-h-screen w-full max-w-[1480px] px-4 py-6 md:px-6 xl:px-8">
+      {!hasJoinedSession ? (
+        <section className="mb-6 overflow-hidden rounded-[2rem] border border-border/60 bg-[linear-gradient(135deg,rgba(255,255,255,0.96),rgba(255,249,238,0.94))] p-6 shadow-sm md:p-8">
+          <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
+            <div className="space-y-4">
+              <Badge variant="secondary" className="rounded-full px-3 py-1">Mobile-first multiplayer beta</Badge>
+              <div className="space-y-3">
+                <h1 className="font-heading text-4xl tracking-tight md:text-5xl">
+                  Clash-Royale style D&amp;D runtime
+                </h1>
+                <p className="max-w-3xl text-base leading-7 text-muted-foreground md:text-lg">
+                  Create public or private rooms, keep real identity hidden behind character names, and drop into a DM-generated tactical run with a shared map, live DM speech, and fixed combat controls.
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center justify-start gap-2 lg:justify-end">
+              <Badge variant="outline" className="rounded-full px-3 py-1">React</Badge>
+              <Badge variant="outline" className="rounded-full px-3 py-1">Convex</Badge>
+              <Badge variant="outline" className="rounded-full px-3 py-1">LangGraph</Badge>
+              <Badge variant="outline" className="rounded-full px-3 py-1">Deepgram</Badge>
+              <Badge variant="outline" className="rounded-full px-3 py-1">ElevenLabs</Badge>
+              {auth.isSignedIn ? <UserButton /> : null}
+            </div>
           </div>
         </section>
       ) : (
-        <section className="runtime-topbar">
-          <div className="panel session-runtime-header">
-            <div>
-              <p className="eyebrow">Room</p>
-              <h2>{session.title}</h2>
-            </div>
-            <div className="overview-chips">
-              <span className="status-pill">{session.roomPrivacy}</span>
-              <span className="status-pill">Code {session.joinCode}</span>
-              <button type="button" className={state.activePage === "runtime" ? "active" : ""} onClick={() => actions.setActivePage("runtime")}>Runtime</button>
-              <button type="button" className={state.activePage === "rules" ? "active" : ""} onClick={() => actions.setActivePage("rules")}>Rules</button>
-            </div>
-          </div>
-          <div className="runtime-user-slot">{auth.isSignedIn ? <UserButton /> : null}</div>
+        <section className="mb-4 grid gap-3 lg:grid-cols-[1fr_auto] lg:items-start">
+          <Card className="border-border/60 bg-card/95 shadow-sm">
+            <CardContent className="flex flex-col gap-4 p-5 md:flex-row md:items-center md:justify-between">
+              <div className="space-y-1">
+                <p className="text-xs font-medium uppercase tracking-[0.22em] text-muted-foreground">Room</p>
+                <h2 className="font-heading text-2xl tracking-tight">{session.title}</h2>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Badge variant="outline" className="rounded-full px-3 py-1">{session.roomPrivacy}</Badge>
+                <Badge variant="outline" className="rounded-full px-3 py-1">Code {session.joinCode}</Badge>
+                <Button
+                  type="button"
+                  variant={state.activePage === "runtime" ? "default" : "outline"}
+                  className="rounded-full"
+                  onClick={() => actions.setActivePage("runtime")}
+                >
+                  Runtime
+                </Button>
+                <Button
+                  type="button"
+                  variant={state.activePage === "rules" ? "default" : "outline"}
+                  className="rounded-full"
+                  onClick={() => actions.setActivePage("rules")}
+                >
+                  Rules
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+          <div className="flex justify-end">{auth.isSignedIn ? <UserButton /> : null}</div>
         </section>
       )}
 
@@ -77,8 +118,8 @@ export default function BetaLobbyApp() {
       {auth.isSignedIn && !auth.isConvexAuthenticated ? <ConvexAuthGate authDebug={auth.authDebug} /> : null}
 
       {auth.isSignedIn && auth.isConvexAuthenticated ? (
-        <div className="app-shell">
-          {!session ? (
+        <div className="grid gap-4">
+          {!hasJoinedSession ? (
             <RoomEntryPanel
               busy={state.busy}
               createCharacterName={state.createCharacterName}
@@ -87,6 +128,7 @@ export default function BetaLobbyApp() {
               joinCharacterName={state.joinCharacterName}
               joinCodeInput={state.joinCodeInput}
               publicSessions={data.publicSessions}
+              sessionPreview={session}
               onCreateCharacterNameChange={actions.setCreateCharacterName}
               onSessionTitleChange={actions.setSessionTitle}
               onRoomPrivacyChange={actions.setRoomPrivacy}
@@ -128,13 +170,16 @@ export default function BetaLobbyApp() {
               onConfirmCombatPreview={actions.handleConfirmCombatPreview}
               onSubmitPrompt={actions.handleSubmitScenePrompt}
               onMovePlayerToken={actions.handleMovePlayerToken}
+              onShareSceneMessage={actions.handleShareSceneMessage}
             />
           )}
 
           {state.error ? (
-            <section className="panel beta-panel">
-              <p className="beta-error">{state.error}</p>
-            </section>
+            <Card className="border-destructive/25 bg-destructive/5 shadow-sm">
+              <CardContent className="p-4">
+                <p className="text-sm text-destructive">{state.error}</p>
+              </CardContent>
+            </Card>
           ) : null}
         </div>
       ) : null}

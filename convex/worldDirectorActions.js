@@ -4,7 +4,8 @@ import { action } from "./_generated/server";
 import { v } from "convex/values";
 
 import { internal } from "./_generated/api";
-import { generateAdventureBlueprintGraph, previewPlayerIntentWithGraph } from "./lib/gameDirectorGraph";
+import { previewPlayerIntentWithGraph } from "./lib/gameDirectorGraph";
+import { runCreateRunGraph } from "./domain/world/graph/createRunGraph";
 
 export const startAdventureFromGraph = action({
   args: {
@@ -24,7 +25,7 @@ export const startAdventureFromGraph = action({
     }
 
     const activeParticipants = bootstrap.participants.filter((participant) => participant.status !== "left");
-    const blueprint = await generateAdventureBlueprintGraph({
+    const blueprint = await runCreateRunGraph({
       sessionTitle: bootstrap.session.title,
       partySize: activeParticipants.length,
     });

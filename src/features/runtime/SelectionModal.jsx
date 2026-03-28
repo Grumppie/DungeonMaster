@@ -41,10 +41,13 @@ export function SelectionModal({
             className="secondary"
             onClick={() =>
               onQuickPrompt({
-                promptMode: "inspect",
-                content: `I study ${name} and the immediate battlefield around them. What stands out?`,
-              })
-            }
+              promptMode: "inspect",
+              content: `I study ${name} and the immediate battlefield around them. What stands out?`,
+              sourceKind: "combatant",
+              sourceId: combatant._id,
+              sourceLabel: name,
+            })
+          }
           >
             Read
           </button>
@@ -53,10 +56,13 @@ export function SelectionModal({
             className="secondary"
             onClick={() =>
               onQuickPrompt({
-                promptMode: "speak",
-                content: `I address ${name} directly.`,
-              })
-            }
+              promptMode: "speak",
+              content: `I address ${name} directly.`,
+              sourceKind: "npc",
+              sourceId: combatant._id,
+              sourceLabel: name,
+            })
+          }
           >
             Speak
           </button>
@@ -75,6 +81,9 @@ export function SelectionModal({
               onQuickPrompt({
                 promptMode: mode === "speak" ? "speak" : "inspect",
                 content: `I ${mode} the ${interactable.label}.`,
+                sourceKind: "interactable",
+                sourceId: interactable.id,
+                sourceLabel: interactable.label,
               })
             }
           >
@@ -87,6 +96,9 @@ export function SelectionModal({
               onQuickPrompt({
                 promptMode: "ask",
                 content: `What exactly can I do with the ${interactable.label}?`,
+                sourceKind: "interactable",
+                sourceId: interactable.id,
+                sourceLabel: interactable.label,
               })
             }
           >
@@ -104,6 +116,9 @@ export function SelectionModal({
             onQuickPrompt({
               promptMode: "inspect",
               content: `I inspect ${buildCellLabel(selectedCell)} carefully for anything unusual.`,
+              sourceKind: "tile",
+              sourceId: `${selectedCell.x}:${selectedCell.y}`,
+              sourceLabel: buildCellLabel(selectedCell),
             })
           }
         >

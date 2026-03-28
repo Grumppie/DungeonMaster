@@ -83,6 +83,67 @@ function getOpenAIModel(modelName = process.env.OPENAI_WORLD_MODEL || process.en
   });
 }
 
+function toOptionalString(value) {
+  if (value === null || value === undefined) {
+    return undefined;
+  }
+  const normalized = String(value).trim();
+  return normalized ? normalized : undefined;
+}
+
+function toOptionalNumber(value) {
+  return value === null || value === undefined ? undefined : value;
+}
+
+function normalizeNpcBrief(npc) {
+  return {
+    name: npc.name,
+    role: npc.role,
+    motive: npc.motive,
+    voiceTone: toOptionalString(npc.voiceTone),
+    voiceProvider: toOptionalString(npc.voiceProvider),
+    voiceId: toOptionalString(npc.voiceId),
+    stylePrompt: toOptionalString(npc.stylePrompt),
+  };
+}
+
+function normalizeInteractable(interactable) {
+  return {
+    id: interactable.id,
+    label: interactable.label,
+    kind: interactable.kind,
+    position: interactable.position,
+    interactionModes: interactable.interactionModes || [],
+  };
+}
+
+function normalizeInvestigationRule(rule) {
+  return {
+    sourceId: rule.sourceId,
+    requiredMode: rule.requiredMode,
+    unlocks: rule.unlocks || [],
+    progressDelta: toOptionalNumber(rule.progressDelta),
+  };
+}
+
+function normalizeScene(scene) {
+  return {
+    order: scene.order,
+    type: scene.type,
+    title: scene.title,
+    objective: scene.objective,
+    summary: scene.summary,
+    pressure: scene.pressure,
+    encounterScale: scene.encounterScale,
+    mapTemplateKey: toOptionalString(scene.mapTemplateKey) || (scene.type === "combat" ? "arena_bridge" : "investigation_hall"),
+    rewardPreview: toOptionalString(scene.rewardPreview),
+    sceneOpener: toOptionalString(scene.sceneOpener),
+    npcBriefs: enrichNpcVoiceProfiles((scene.npcBriefs || []).map(normalizeNpcBrief)),
+    interactables: (scene.interactables || []).map(normalizeInteractable),
+    investigationRules: (scene.investigationRules || []).map(normalizeInvestigationRule),
+  };
+}
+
 function buildFallbackBlueprint(sessionTitle, partySize) {
   const title = sessionTitle?.trim() || "Frontier Rush";
   const scenes = [
@@ -249,11 +310,7 @@ async function generateSceneStack(state) {
   ]);
 
   const scenes = result.scenes.map((scene) => ({
-    ...scene,
-    mapTemplateKey: scene.mapTemplateKey || (scene.type === "combat" ? "arena_bridge" : "investigation_hall"),
-    npcBriefs: enrichNpcVoiceProfiles(scene.npcBriefs || []),
-    interactables: scene.interactables || [],
-    investigationRules: scene.investigationRules || [],
+    ...normalizeScene(scene),
   }));
 
   return {

@@ -7,9 +7,18 @@ import {
   sessionStatusValidator,
 } from "./domain/session/validators";
 import {
+  actStateValidator,
   interactableBlueprintValidator,
   investigationRuleValidator,
+  landmarkValidator,
+  mapCellValidator,
+  pressureTierValidator,
+  sceneFactValidator,
   sceneNpcBriefValidator,
+  scenePurposeValidator,
+  stallRecoveryPlanValidator,
+  transitionAnchorValidator,
+  transitionRuleValidator,
 } from "./domain/world/validators";
 
 const sessionStatus = v.union(
@@ -58,6 +67,8 @@ const sceneMessageType = v.union(
   v.literal("reply"),
   v.literal("system"),
 );
+
+const sceneMessageVisibility = v.union(v.literal("party"), v.literal("private"));
 
 const combatEncounterStatus = v.union(
   v.literal("setup"),
@@ -137,6 +148,8 @@ export default defineSchema({
     seatIndex: v.optional(v.number()),
     sceneX: v.optional(v.number()),
     sceneY: v.optional(v.number()),
+    sceneContributionCounter: v.optional(v.number()),
+    lastMeaningfulSceneActionAt: v.optional(v.number()),
     isAnonymous: v.boolean(),
     joinedAt: v.number(),
     updatedAt: v.number(),
@@ -169,8 +182,19 @@ export default defineSchema({
     status: sceneStatus,
     title: v.string(),
     objective: v.string(),
+    objectiveText: v.optional(v.string()),
     summary: v.string(),
     pressure: v.string(),
+    scenePurpose: v.optional(scenePurposeValidator),
+    actState: v.optional(actStateValidator),
+    requiredDiscovery: v.optional(v.string()),
+    requiredCommitment: v.optional(v.string()),
+    stallRecoveryPlan: v.optional(stallRecoveryPlanValidator),
+    allowedMicroScenarios: v.optional(v.array(v.string())),
+    transitionRule: v.optional(transitionRuleValidator),
+    landmarks: v.optional(v.array(landmarkValidator)),
+    themeTags: v.optional(v.array(v.string())),
+    pressureTier: v.optional(pressureTierValidator),
     encounterScale: v.string(),
     mapTemplateKey: v.optional(v.string()),
     enemyTheme: v.optional(v.string()),
@@ -190,14 +214,100 @@ export default defineSchema({
     runId: v.id("adventureRuns"),
     sceneId: v.id("adventureScenes"),
     participantId: v.optional(v.id("sessionParticipants")),
+    targetParticipantId: v.optional(v.id("sessionParticipants")),
+    visibility: v.optional(sceneMessageVisibility),
     speakerType: sceneMessageSpeakerType,
     speakerLabel: v.string(),
     messageType: sceneMessageType,
+    sourceKind: v.optional(v.string()),
+    sourceId: v.optional(v.union(v.id("adventureScenes"), v.id("sessionParticipants"), v.string())),
+    landmarkRef: v.optional(v.string()),
+    sceneVersion: v.optional(v.number()),
     content: v.string(),
     createdAt: v.number(),
   })
     .index("by_scene", ["sceneId", "createdAt"])
-    .index("by_session", ["sessionId", "createdAt"]),
+    .index("by_session", ["sessionId", "createdAt"])
+    .index("by_target", ["targetParticipantId", "createdAt"]),
+
+  sceneStates: defineTable({
+    sceneId: v.id("adventureScenes"),
+    sessionId: v.id("gameSessions"),
+    runId: v.id("adventureRuns"),
+    actState: actStateValidator,
+    scenePurpose: scenePurposeValidator,
+    objectiveText: v.string(),
+    currentPressure: v.string(),
+    pressureTier: pressureTierValidator,
+    requiredDiscoveryState: v.string(),
+    requiredCommitmentState: v.string(),
+    transitionUnlocked: v.boolean(),
+    stallCounter: v.number(),
+    lastMeaningfulActionAt: v.number(),
+    visibleLandmarkIds: v.array(v.string()),
+    revealedInteractableIds: v.array(v.string()),
+    consumedInteractableIds: v.array(v.string()),
+    changedTiles: v.array(v.string()),
+    activeMicroScenarioIds: v.array(v.string()),
+    hintBudget: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_scene", ["sceneId"])
+    .index("by_session", ["sessionId"]),
+
+  sceneMapInstances: defineTable({
+    sceneId: v.id("adventureScenes"),
+    templateKey: v.string(),
+    version: v.number(),
+    width: v.number(),
+    height: v.number(),
+    cells: v.array(mapCellValidator),
+    landmarks: v.array(
+      v.object({
+        landmarkId: v.string(),
+        name: v.string(),
+        cells: v.array(v.array(v.number())),
+      }),
+    ),
+    transitionAnchors: v.array(transitionAnchorValidator),
+    revealedInteractableIds: v.array(v.string()),
+    changedCells: v.array(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_scene", ["sceneId"]),
+
+  sceneFacts: defineTable({
+    sceneId: v.id("adventureScenes"),
+    factType: v.string(),
+    summary: v.string(),
+    isPublic: v.boolean(),
+    relatedIds: v.optional(v.array(v.string())),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_scene", ["sceneId", "createdAt"]),
+
+  sceneProgress: defineTable({
+    sceneId: v.id("adventureScenes"),
+    requiredDiscovery: v.string(),
+    requiredCommitment: v.string(),
+    discoveryCompleted: v.boolean(),
+    commitmentCompleted: v.boolean(),
+    transitionUnlocked: v.boolean(),
+    stallCounter: v.number(),
+    hintBudget: v.number(),
+    transitionAnchorIds: v.array(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_scene", ["sceneId"]),
+
+  sceneMicroScenarios: defineTable({
+    sceneId: v.id("adventureScenes"),
+    scenarioKey: v.string(),
+    status: v.string(),
+    summary: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_scene", ["sceneId"]),
 
   combatEncounters: defineTable({
     sessionId: v.id("gameSessions"),
@@ -350,8 +460,12 @@ export default defineSchema({
     voiceProfileKey: v.string(),
     audioCacheKey: v.optional(v.string()),
     audioUrl: v.optional(v.string()),
+    visibility: v.optional(sceneMessageVisibility),
+    targetParticipantId: v.optional(v.id("sessionParticipants")),
     createdAt: v.number(),
-  }).index("by_room", ["roomId", "createdAt"]),
+  })
+    .index("by_room", ["roomId", "createdAt"])
+    .index("by_room_target", ["roomId", "targetParticipantId", "createdAt"]),
 
   voiceCaches: defineTable({
     cacheKey: v.string(),

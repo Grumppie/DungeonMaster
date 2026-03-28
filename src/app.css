@@ -1,5 +1,5 @@
 @import "tw-animate-css";
-@import "shadcn/tailwind.css";
+@import "tailwindcss";
 @import "@fontsource-variable/dm-sans";
 
 :root {
@@ -92,6 +92,27 @@ body {
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 12px;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.4rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid rgba(73, 48, 32, 0.14);
+  background: rgba(255, 251, 242, 0.78);
+  color: #4d3426;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.status-pill.success,
+.status-pill.active-turn {
+  background: rgba(214, 239, 223, 0.94);
+  border-color: rgba(63, 126, 86, 0.22);
+  color: #1f5d39;
 }
 
 .architecture-panel {
@@ -1651,6 +1672,18 @@ button:disabled {
     0 0 0 1px rgba(191, 136, 43, 0.12);
 }
 
+.runtime-map-cell.transition-locked {
+  box-shadow:
+    inset 0 0 0 2px rgba(120, 87, 40, 0.34),
+    0 0 0 1px rgba(120, 87, 40, 0.12);
+}
+
+.runtime-map-cell.transition-open {
+  box-shadow:
+    inset 0 0 0 2px rgba(55, 126, 84, 0.42),
+    0 0 0 1px rgba(55, 126, 84, 0.16);
+}
+
 .runtime-map-cell:hover {
   transform: translateY(-1px);
 }
@@ -1802,6 +1835,17 @@ button:disabled {
   pointer-events: none;
 }
 
+.runtime-map-overlay-chips {
+  justify-content: flex-start;
+}
+
+.runtime-map-selected-label {
+  max-width: min(280px, 60vw);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .runtime-transcript-overlay {
   max-width: 100%;
   margin-top: 6px;
@@ -1873,6 +1917,10 @@ button:disabled {
 
 .runtime-dm-lane.compact textarea {
   min-height: 88px;
+}
+
+.runtime-latest-dm-panel {
+  margin-top: 10px;
 }
 
 .runtime-player-hud {
