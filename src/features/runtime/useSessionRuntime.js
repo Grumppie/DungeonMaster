@@ -143,6 +143,11 @@ export function useSessionRuntime() {
     }
   }, [combat, controlledCombatant, currentCombatant, selectedCombatTarget]);
 
+  useEffect(() => {
+    setSelectedCell(null);
+    setSelectedCombatTarget("");
+  }, [activeScene?._id]);
+
   return {
     auth: {
       isSignedIn,

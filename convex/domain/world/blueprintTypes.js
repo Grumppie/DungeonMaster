@@ -127,6 +127,39 @@ function inferLandmarks(scene) {
   return [];
 }
 
+function inferMapTemplateKey(scene, order, totalScenes) {
+  const existing = normalizeText(scene.mapTemplateKey, "");
+  if (existing) {
+    if (existing === "investigation_hall" && order === 1) {
+      return "intro_causeway";
+    }
+    if (existing === "investigation_hall" && scene.type === "exploration") {
+      return "investigation_archive";
+    }
+    if (existing === "arena_bridge" && order === totalScenes && scene.type === "combat") {
+      return "arena_sanctum";
+    }
+    if (existing === "investigation_hall" && scene.type === "resolution") {
+      return "resolution_chamber";
+    }
+    return existing;
+  }
+
+  if (scene.type === "intro") {
+    return "intro_causeway";
+  }
+  if (scene.type === "exploration") {
+    return "investigation_archive";
+  }
+  if (scene.type === "combat") {
+    return order === totalScenes ? "arena_sanctum" : "arena_bridge";
+  }
+  if (scene.type === "resolution") {
+    return "resolution_chamber";
+  }
+  return "fallback_exploration";
+}
+
 export function normalizeSceneBlueprint(scene, order, totalScenes) {
   return {
     ...scene,
@@ -137,6 +170,7 @@ export function normalizeSceneBlueprint(scene, order, totalScenes) {
     summary: normalizeText(scene.summary, "The scene is active and waiting on the party."),
     pressure: normalizeText(scene.pressure, "steady"),
     encounterScale: normalizeText(scene.encounterScale, "none"),
+    mapTemplateKey: inferMapTemplateKey(scene, order, totalScenes),
     scenePurpose: inferScenePurpose(scene, order, totalScenes),
     actState: inferActState(scene, order, totalScenes),
     pressureTier: inferPressureTier(scene, order, totalScenes),

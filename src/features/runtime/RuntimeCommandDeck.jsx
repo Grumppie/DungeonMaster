@@ -13,15 +13,21 @@ export function RuntimeCommandDeck({
   activeTranscript,
   latestDmMessage,
 }) {
+  const progressHint = sceneProgress?.transitionUnlocked
+    ? "The exit is unlocked. Move the party through the open anchor when you are ready."
+    : !sceneProgress?.discoveryCompleted
+      ? "Survey marked clues, landmarks, or NPCs until the party uncovers what matters here."
+      : !sceneProgress?.commitmentCompleted
+        ? "The key fact is known. Now commit to the route, object, or choice that changes the scene."
+        : "Press the scene forward through the active route or anchor.";
   const nextStepText =
     dmStatus === "retrieving"
       ? "The DM is pulling the right rules and scene context."
       : dmStatus === "responding"
-        ? latestDmMessage?.content || "The DM is forming the response now."
+        ? "The DM is shaping the next reply from the current scene state."
         : dmStatus === "speaking"
-          ? "The reply is ready and voice playback is being published."
-          : latestDmMessage?.content ||
-            "Tap the map, inspect a marked object, or choose a combat action from the tray.";
+          ? "The latest reply is being spoken now."
+          : progressHint;
 
   return (
     <section className="panel runtime-command-deck">

@@ -70,6 +70,26 @@ function buildTwilightCityAlley() {
   return layout;
 }
 
+function buildIntroCauseway() {
+  const layout = createBaseLayout(12, 8, "grass");
+
+  paintRect(layout, 0, 3, 11, 4, { kind: "road" });
+  paintRect(layout, 4, 0, 7, 7, { kind: "road" });
+  paintRect(layout, 1, 0, 3, 2, { kind: "building", blocked: true });
+  paintRect(layout, 8, 0, 10, 2, { kind: "building", blocked: true });
+  paintRect(layout, 0, 5, 2, 7, { kind: "wall", blocked: true });
+  paintRect(layout, 9, 5, 11, 7, { kind: "wall", blocked: true });
+  paintPoints(layout, [[5, 0], [6, 0], [5, 7], [6, 7]], { kind: "doorway", blocked: false });
+  paintPoints(layout, [[2, 3], [9, 4]], { kind: "signpost", blocked: true });
+
+  addLandmark(layout, "north breach", [[5, 0], [6, 0]]);
+  addLandmark(layout, "south staging gate", [[5, 7], [6, 7]]);
+  addLandmark(layout, "west command post", [[2, 3]]);
+  addLandmark(layout, "east briefing post", [[9, 4]]);
+
+  return layout;
+}
+
 function buildInvestigationHall() {
   const layout = createBaseLayout(12, 8, "stone");
 
@@ -94,6 +114,30 @@ function buildInvestigationHall() {
   return layout;
 }
 
+function buildInvestigationArchive() {
+  const layout = createBaseLayout(12, 8, "stone");
+
+  paintRect(layout, 0, 0, 11, 0, { kind: "wall", blocked: true });
+  paintRect(layout, 0, 7, 11, 7, { kind: "wall", blocked: true });
+  paintRect(layout, 0, 0, 0, 7, { kind: "wall", blocked: true });
+  paintRect(layout, 11, 0, 11, 7, { kind: "wall", blocked: true });
+
+  paintRect(layout, 1, 1, 10, 6, { kind: "hall" });
+  paintRect(layout, 2, 1, 3, 6, { kind: "building", blocked: true });
+  paintRect(layout, 8, 1, 9, 6, { kind: "building", blocked: true });
+  paintRect(layout, 4, 2, 7, 5, { kind: "stone" });
+  paintPoints(layout, [[5, 0], [6, 0], [5, 7], [6, 7]], { kind: "doorway", blocked: false });
+  paintPoints(layout, [[4, 3], [7, 3]], { kind: "torch", blocked: true });
+
+  addLandmark(layout, "north archive gate", [[5, 0], [6, 0]]);
+  addLandmark(layout, "south archive gate", [[5, 7], [6, 7]]);
+  addLandmark(layout, "west shelving block", [[2, 1], [3, 6]]);
+  addLandmark(layout, "east shelving block", [[8, 1], [9, 6]]);
+  addLandmark(layout, "central reading floor", [[4, 2], [7, 5]]);
+
+  return layout;
+}
+
 function buildArenaBridge() {
   const layout = createBaseLayout(12, 8, "chasm");
 
@@ -109,6 +153,50 @@ function buildArenaBridge() {
   addLandmark(layout, "west barricade", [[2, 3]]);
   addLandmark(layout, "east barricade", [[9, 4]]);
   addLandmark(layout, "central lane", [[4, 2], [7, 5]]);
+
+  return layout;
+}
+
+function buildArenaSanctum() {
+  const layout = createBaseLayout(12, 8, "stone");
+
+  paintRect(layout, 0, 0, 11, 0, { kind: "wall", blocked: true });
+  paintRect(layout, 0, 7, 11, 7, { kind: "wall", blocked: true });
+  paintRect(layout, 0, 0, 0, 7, { kind: "wall", blocked: true });
+  paintRect(layout, 11, 0, 11, 7, { kind: "wall", blocked: true });
+  paintRect(layout, 1, 1, 10, 6, { kind: "hall" });
+  paintRect(layout, 4, 2, 7, 5, { kind: "bridge" });
+  paintPoints(layout, [[3, 3], [8, 4]], { kind: "barricade", blocked: true });
+  paintPoints(layout, [[5, 0], [6, 0], [5, 7], [6, 7]], { kind: "doorway", blocked: false });
+  paintPoints(layout, [[2, 2], [9, 2], [2, 5], [9, 5]], { kind: "torch", blocked: true });
+
+  addLandmark(layout, "north sanctum gate", [[5, 0], [6, 0]]);
+  addLandmark(layout, "south sanctum gate", [[5, 7], [6, 7]]);
+  addLandmark(layout, "ritual bridge", [[4, 2], [7, 5]]);
+  addLandmark(layout, "west barricade", [[3, 3]]);
+  addLandmark(layout, "east barricade", [[8, 4]]);
+
+  return layout;
+}
+
+function buildResolutionChamber() {
+  const layout = createBaseLayout(12, 8, "hall");
+
+  paintRect(layout, 0, 0, 11, 0, { kind: "wall", blocked: true });
+  paintRect(layout, 0, 7, 11, 7, { kind: "wall", blocked: true });
+  paintRect(layout, 0, 0, 0, 7, { kind: "wall", blocked: true });
+  paintRect(layout, 11, 0, 11, 7, { kind: "wall", blocked: true });
+  paintRect(layout, 1, 1, 10, 6, { kind: "hall" });
+  paintRect(layout, 4, 2, 7, 5, { kind: "stone" });
+  paintPoints(layout, [[5, 0], [6, 0]], { kind: "doorway", blocked: false });
+  paintPoints(layout, [[5, 7], [6, 7]], { kind: "doorway", blocked: false });
+  paintPoints(layout, [[3, 3], [8, 3]], { kind: "pillar", blocked: true });
+
+  addLandmark(layout, "north chamber gate", [[5, 0], [6, 0]]);
+  addLandmark(layout, "south chamber gate", [[5, 7], [6, 7]]);
+  addLandmark(layout, "central dais", [[4, 2], [7, 5]]);
+  addLandmark(layout, "left witness pillar", [[3, 3]]);
+  addLandmark(layout, "right witness pillar", [[8, 3]]);
 
   return layout;
 }
@@ -129,20 +217,38 @@ export function buildSceneMapLayout(activeScene) {
   const templateKey = String(activeScene?.mapTemplateKey || "").toLowerCase();
   const sceneType = String(activeScene?.type || "").toLowerCase();
 
+  if (templateKey.includes("intro_causeway")) {
+    return buildIntroCauseway();
+  }
   if (templateKey.includes("twilight_city_alley")) {
     return buildTwilightCityAlley();
+  }
+  if (templateKey.includes("investigation_archive")) {
+    return buildInvestigationArchive();
   }
   if (templateKey.includes("investigation_hall")) {
     return buildInvestigationHall();
   }
+  if (templateKey.includes("arena_sanctum")) {
+    return buildArenaSanctum();
+  }
   if (templateKey.includes("arena_bridge")) {
     return buildArenaBridge();
   }
+  if (templateKey.includes("resolution_chamber")) {
+    return buildResolutionChamber();
+  }
+  if (templateKey.includes("fallback_exploration")) {
+    return buildFallbackExploration();
+  }
   if (sceneType === "combat") {
-    return buildArenaBridge();
+    return activeScene?.scenePurpose === "climax" ? buildArenaSanctum() : buildArenaBridge();
   }
   if (sceneType === "exploration" || sceneType === "investigation" || sceneType === "intro") {
-    return buildFallbackExploration();
+    return sceneType === "intro" ? buildIntroCauseway() : buildInvestigationArchive();
+  }
+  if (sceneType === "resolution") {
+    return buildResolutionChamber();
   }
   return createBaseLayout();
 }

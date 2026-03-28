@@ -33,6 +33,7 @@ export function RuntimePlayfield({
   return (
     <section className="runtime-playfield">
       <SceneGrid
+        key={activeScene?._id || "runtime-scene-grid"}
         participants={session?.participants || []}
         currentParticipantId={currentParticipant?._id}
         combat={combat}
