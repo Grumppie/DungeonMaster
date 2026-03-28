@@ -121,9 +121,8 @@ export function LiveDmAudioStreamer({ messageId, content, dmStatus, enabled = tr
   const tokenPromiseRef = useRef(null);
   const finalizeTimeoutRef = useRef(null);
   const fallbackTimeoutRef = useRef(null);
-  const flushResolverRef = useRef(null);
-  const awaitingFinalizeRef = useRef(false);
   const sendQueueRef = useRef(Promise.resolve());
+  const flushedMessageRef = useRef(false);
   const pendingPlaybackRetryRef = useRef(false);
   const hasReceivedAudioForMessageRef = useRef(false);
   const fallbackTriggeredForMessageRef = useRef(false);
@@ -211,16 +210,9 @@ export function LiveDmAudioStreamer({ messageId, content, dmStatus, enabled = tr
   }
 
   function scheduleChunkFinalize() {
-    if (!awaitingFinalizeRef.current) {
-      return;
-    }
     window.clearTimeout(finalizeTimeoutRef.current);
     finalizeTimeoutRef.current = window.setTimeout(() => {
       finalizeCurrentAudio();
-      awaitingFinalizeRef.current = false;
-      const resolve = flushResolverRef.current;
-      flushResolverRef.current = null;
-      resolve?.();
     }, 180);
   }
 
@@ -300,13 +292,17 @@ export function LiveDmAudioStreamer({ messageId, content, dmStatus, enabled = tr
 
   async function sendChunk(chunk) {
     const socket = await ensureSocket();
-    await new Promise((resolve) => {
-      flushResolverRef.current = resolve;
-      awaitingFinalizeRef.current = true;
-      socket.send(JSON.stringify({ type: "Speak", text: chunk }));
-      socket.send(JSON.stringify({ type: "Flush" }));
-      scheduleChunkFinalize();
-    });
+    socket.send(JSON.stringify({ type: "Speak", text: chunk }));
+  }
+
+  async function flushMessage() {
+    if (flushedMessageRef.current) {
+      return;
+    }
+    flushedMessageRef.current = true;
+    const socket = await ensureSocket();
+    socket.send(JSON.stringify({ type: "Flush" }));
+    scheduleChunkFinalize();
   }
 
   async function sendChunks(chunks) {
@@ -337,11 +333,11 @@ export function LiveDmAudioStreamer({ messageId, content, dmStatus, enabled = tr
       hasReceivedAudioForMessageRef.current = false;
       fallbackTriggeredForMessageRef.current = false;
       blockedUrlRef.current = null;
-      awaitingFinalizeRef.current = false;
-      flushResolverRef.current = null;
+      flushedMessageRef.current = false;
       sendQueueRef.current = Promise.resolve();
       window.clearTimeout(fallbackTimeoutRef.current);
       window.clearTimeout(finalizeTimeoutRef.current);
+      currentAudioChunksRef.current = [];
     }
 
     const force = dmStatus === "speaking" || dmStatus === "idle";
@@ -356,6 +352,9 @@ export function LiveDmAudioStreamer({ messageId, content, dmStatus, enabled = tr
     const { chunks, remaining } = extractSpeakableChunks(pendingTextRef.current, force);
     pendingTextRef.current = remaining;
     void sendChunks(chunks);
+    if (dmStatus === "idle" && normalizedContent.trim() && !pendingTextRef.current.trim()) {
+      void flushMessage();
+    }
     if (force && normalizedContent.trim()) {
       scheduleSilentFallback(normalizedContent);
     }
