@@ -74,7 +74,7 @@ function extractSpeakableChunks(buffer, force = false) {
       continue;
     }
 
-    const softBreakIndex = remaining.search(/[,;:]\s/);
+    const softBreakIndex = remaining.search(/[;:]\s/);
     if (softBreakIndex >= 48) {
       const chunk = remaining.slice(0, softBreakIndex + 1).trim();
       if (chunk) {
@@ -344,14 +344,15 @@ export function LiveDmAudioStreamer({ messageId, content, dmStatus, enabled = tr
       window.clearTimeout(finalizeTimeoutRef.current);
     }
 
+    const force = dmStatus === "speaking" || dmStatus === "idle";
     const newContent = normalizedContent.slice(processedContentRef.current.length);
-    if (!newContent) {
+    if (newContent) {
+      processedContentRef.current = normalizedContent;
+      pendingTextRef.current += newContent;
+    } else if (!force || !pendingTextRef.current.trim()) {
       return undefined;
     }
 
-    processedContentRef.current = normalizedContent;
-    pendingTextRef.current += newContent;
-    const force = dmStatus === "speaking" || dmStatus === "idle";
     const { chunks, remaining } = extractSpeakableChunks(pendingTextRef.current, force);
     pendingTextRef.current = remaining;
     void sendChunks(chunks);

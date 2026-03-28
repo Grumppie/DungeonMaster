@@ -1,8 +1,8 @@
 function buildCellLabel(selectedCell) {
   if (!selectedCell) {
-    return "this area";
+    return "this spot";
   }
-  return `cell ${selectedCell.x},${selectedCell.y}`;
+  return "this spot";
 }
 
 export function buildSuggestedPrompt({ selectedCell, nextMode }) {

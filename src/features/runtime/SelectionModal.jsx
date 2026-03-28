@@ -2,9 +2,9 @@ import React from "react";
 
 function buildCellLabel(selectedCell) {
   if (!selectedCell) {
-    return "Nothing selected";
+    return "this spot";
   }
-  return `Cell ${selectedCell.x},${selectedCell.y}`;
+  return "this spot";
 }
 
 export function SelectionModal({
@@ -115,10 +115,10 @@ export function SelectionModal({
           onClick={() =>
             onQuickPrompt({
               promptMode: "inspect",
-              content: `I inspect ${buildCellLabel(selectedCell)} carefully for anything unusual.`,
+              content: "I inspect this spot carefully for anything unusual.",
               sourceKind: "tile",
               sourceId: `${selectedCell.x}:${selectedCell.y}`,
-              sourceLabel: buildCellLabel(selectedCell),
+              sourceLabel: "this spot",
             })
           }
         >

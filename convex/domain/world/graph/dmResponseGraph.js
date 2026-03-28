@@ -85,7 +85,7 @@ export function buildSystemPrompt({ runtime, combat, promptMode, playerName, ret
   const mapSummary = describeSceneMapLayout(runtime.activeScene);
   const interactableSummary = (runtime.activeScene.interactables || [])
     .filter((entry) => !entry.hidden)
-    .map((entry) => `${entry.label} [${entry.kind}] at ${entry.position?.x},${entry.position?.y}`)
+    .map((entry) => `${entry.label} [${entry.kind}]`)
     .join("; ");
   const recentMessages = runtime.messages
     .slice(-8)
@@ -112,7 +112,7 @@ export function buildSystemPrompt({ runtime, combat, promptMode, playerName, ret
     `Pressure: ${runtime.activeScene.pressure}.`,
     `Map footprint: ${mapSummary.width} by ${mapSummary.height}.`,
     `Visible map features: ${mapSummary.features.join(", ") || "none listed"}.`,
-    `Named landmarks: ${mapSummary.landmarks.map((entry) => `${entry.name} at ${entry.cells.map((cell) => cell.join(",")).join(" / ")}`).join("; ") || "none listed"}.`,
+    `Named landmarks: ${mapSummary.landmarks.map((entry) => entry.name).join("; ") || "none listed"}.`,
     `Visible interactables: ${interactableSummary || "none listed"}.`,
     `Prompt mode: ${promptMode}.`,
     `Player name: ${playerName}.`,
