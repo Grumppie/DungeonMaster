@@ -1,4 +1,5 @@
 import React from "react";
+import { getSelectionTitle } from "../../lib/runtimeMappers";
 
 export function SelectionPopover({
   selectedCell,
@@ -130,11 +131,7 @@ export function SelectionPopover({
         <div>
           <p className="eyebrow">Selection</p>
           <h3>
-            {combatant
-              ? combatant.displayName || combatant.name
-              : interactable
-                ? interactable.label
-                : "This spot"}
+            {getSelectionTitle({ combatant, interactable })}
           </h3>
         </div>
         <button type="button" className="secondary" onClick={onClose}>

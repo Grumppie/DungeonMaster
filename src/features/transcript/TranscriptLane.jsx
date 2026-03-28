@@ -1,5 +1,6 @@
 import React from "react";
 import { LIVE_TRANSCRIPT_LIMIT } from "../../contracts/ui";
+import { getTranscriptStatusLabel } from "../../lib/runtimeMappers";
 
 function splitTranscriptLines(value) {
   return String(value || "")
@@ -16,14 +17,7 @@ export function TranscriptLane({ content = "", speakerName = "DM", dmStatus = "i
     return null;
   }
 
-  const statusLabel =
-    dmStatus === "retrieving"
-      ? "retrieving"
-      : dmStatus === "responding"
-        ? "speaking live"
-        : dmStatus === "speaking"
-          ? "voice syncing"
-          : "latest reply";
+  const statusLabel = getTranscriptStatusLabel(dmStatus);
 
   return (
     <section className="runtime-transcript-overlay">

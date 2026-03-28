@@ -1,21 +1,5 @@
 import React from "react";
-
-function getFactLabel(entry) {
-  switch (entry?.factType) {
-    case "clue_reveal":
-      return "Clue";
-    case "unlock":
-      return "Reveal";
-    case "micro_scenario":
-      return "Shift";
-    case "stall_recovery":
-      return "Nudge";
-    case "commitment":
-      return "Commitment";
-    default:
-      return "Scene";
-  }
-}
+import { getSceneFactLabel } from "../../lib/runtimeMappers";
 
 export function SceneEventFeed({ sceneFacts = [] }) {
   if (!sceneFacts.length) {
@@ -36,7 +20,7 @@ export function SceneEventFeed({ sceneFacts = [] }) {
             key={entry._id || `${entry.factType}-${entry.createdAt}`}
             className={`runtime-scene-event ${entry.isPublic ? "public" : "private"}`}
           >
-            <strong>{getFactLabel(entry)}</strong>
+            <strong>{getSceneFactLabel(entry)}</strong>
             <p>{entry.summary}</p>
           </article>
         ))}
