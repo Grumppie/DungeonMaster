@@ -107,18 +107,23 @@ function extractSpeakableChunks(buffer, force = false) {
 
 export function LiveDmAudioStreamer({ messageId, content, dmStatus, enabled = true }) {
   const createDeepgramToken = useAction(api.voice.createDeepgramToken);
+  const synthesizeBrowserFallback = useAction(api.voice.synthesizeBrowserFallback);
   const audioRef = useRef(null);
   const socketRef = useRef(null);
   const objectUrlsRef = useRef([]);
   const playbackQueueRef = useRef([]);
   const isPlayingRef = useRef(false);
+  const blockedUrlRef = useRef(null);
   const currentAudioChunksRef = useRef([]);
   const processedContentRef = useRef("");
   const pendingTextRef = useRef("");
   const activeMessageIdRef = useRef(null);
   const tokenPromiseRef = useRef(null);
   const finalizeTimeoutRef = useRef(null);
+  const fallbackTimeoutRef = useRef(null);
   const pendingPlaybackRetryRef = useRef(false);
+  const hasReceivedAudioForMessageRef = useRef(false);
+  const fallbackTriggeredForMessageRef = useRef(false);
 
   const shouldBeActive = enabled && !!messageId && !!content?.trim();
   const normalizedContent = useMemo(() => String(content || ""), [content]);
@@ -143,17 +148,26 @@ export function LiveDmAudioStreamer({ messageId, content, dmStatus, enabled = tr
     if (isPlayingRef.current || !audioRef.current) {
       return;
     }
-    const nextUrl = playbackQueueRef.current.shift();
+    const nextUrl = blockedUrlRef.current || playbackQueueRef.current.shift();
     if (!nextUrl) {
       return;
     }
-    isPlayingRef.current = true;
-    audioRef.current.src = nextUrl;
-    void audioRef.current.play().catch(() => {
-      isPlayingRef.current = false;
-      pendingPlaybackRetryRef.current = true;
-      playNext();
-    });
+    blockedUrlRef.current = nextUrl;
+    if (audioRef.current.src !== nextUrl) {
+      audioRef.current.src = nextUrl;
+    }
+    void audioRef.current
+      .play()
+      .then(() => {
+        isPlayingRef.current = true;
+        blockedUrlRef.current = null;
+        pendingPlaybackRetryRef.current = false;
+      })
+      .catch(() => {
+        isPlayingRef.current = false;
+        pendingPlaybackRetryRef.current = true;
+        console.warn("[voice] Browser blocked audio playback; waiting for the next user gesture.");
+      });
   }
 
   function enqueueAudioUrl(url) {
@@ -165,6 +179,34 @@ export function LiveDmAudioStreamer({ messageId, content, dmStatus, enabled = tr
     playNext();
   }
 
+  async function playFallbackSpeech(transcript) {
+    if (!transcript?.trim() || fallbackTriggeredForMessageRef.current) {
+      return;
+    }
+    fallbackTriggeredForMessageRef.current = true;
+    try {
+      const result = await synthesizeBrowserFallback({
+        transcript,
+        provider: "deepgram",
+      });
+      if (result?.audioUrl) {
+        enqueueAudioUrl(result.audioUrl);
+      }
+    } catch (error) {
+      console.error("[voice] Fallback DM synthesis failed.", error);
+    }
+  }
+
+  function scheduleSilentFallback(forceTranscript) {
+    window.clearTimeout(fallbackTimeoutRef.current);
+    fallbackTimeoutRef.current = window.setTimeout(() => {
+      if (hasReceivedAudioForMessageRef.current) {
+        return;
+      }
+      void playFallbackSpeech(forceTranscript);
+    }, 1500);
+  }
+
   async function ensureSocket() {
     if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
       return socketRef.current;
@@ -173,13 +215,15 @@ export function LiveDmAudioStreamer({ messageId, content, dmStatus, enabled = tr
       tokenPromiseRef.current = createDeepgramToken();
     }
     const token = await tokenPromiseRef.current;
-    const wsUrl = `wss://api.deepgram.com/v1/speak?model=${encodeURIComponent("aura-2-thalia-en")}&encoding=linear16&sample_rate=${SAMPLE_RATE}&token=${encodeURIComponent(token.access_token)}`;
-    const socket = new WebSocket(wsUrl);
+    const wsUrl = `wss://api.deepgram.com/v1/speak?model=${encodeURIComponent("aura-2-thalia-en")}&encoding=linear16&sample_rate=${SAMPLE_RATE}&container=none`;
+    const socket = new WebSocket(wsUrl, ["token", token.access_token]);
     socket.binaryType = "arraybuffer";
     socketRef.current = socket;
 
     socket.addEventListener("message", async (event) => {
       if (event.data instanceof ArrayBuffer) {
+        hasReceivedAudioForMessageRef.current = true;
+        window.clearTimeout(fallbackTimeoutRef.current);
         currentAudioChunksRef.current.push(new Uint8Array(event.data));
         return;
       }
@@ -196,6 +240,9 @@ export function LiveDmAudioStreamer({ messageId, content, dmStatus, enabled = tr
           } catch {
             return;
           }
+          if (payload.type === "Error" || payload.type === "Warning") {
+            console.warn("[voice] Deepgram websocket event:", payload);
+          }
           if (payload.type === "Flushed") {
             window.clearTimeout(finalizeTimeoutRef.current);
             finalizeTimeoutRef.current = window.setTimeout(() => {
@@ -204,14 +251,22 @@ export function LiveDmAudioStreamer({ messageId, content, dmStatus, enabled = tr
           }
           return;
         }
+        hasReceivedAudioForMessageRef.current = true;
+        window.clearTimeout(fallbackTimeoutRef.current);
         currentAudioChunksRef.current.push(base64ToBytes(text));
         return;
       }
 
       if (event.data instanceof Blob) {
         const arrayBuffer = await event.data.arrayBuffer();
+        hasReceivedAudioForMessageRef.current = true;
+        window.clearTimeout(fallbackTimeoutRef.current);
         currentAudioChunksRef.current.push(new Uint8Array(arrayBuffer));
       }
+    });
+
+    socket.addEventListener("error", (error) => {
+      console.error("[voice] Deepgram websocket error.", error);
     });
 
     socket.addEventListener("close", () => {
@@ -231,10 +286,15 @@ export function LiveDmAudioStreamer({ messageId, content, dmStatus, enabled = tr
     if (!chunks.length) {
       return;
     }
-    const socket = await ensureSocket();
-    for (const chunk of chunks) {
-      socket.send(JSON.stringify({ type: "Speak", text: chunk }));
-      socket.send(JSON.stringify({ type: "Flush" }));
+    try {
+      const socket = await ensureSocket();
+      for (const chunk of chunks) {
+        socket.send(JSON.stringify({ type: "Speak", text: chunk }));
+        socket.send(JSON.stringify({ type: "Flush" }));
+      }
+    } catch (error) {
+      console.error("[voice] Failed to stream DM speech to Deepgram.", error);
+      await playFallbackSpeech(chunks.join(" "));
     }
   }
 
@@ -248,6 +308,10 @@ export function LiveDmAudioStreamer({ messageId, content, dmStatus, enabled = tr
       processedContentRef.current = "";
       pendingTextRef.current = "";
       activeMessageIdRef.current = messageId;
+      hasReceivedAudioForMessageRef.current = false;
+      fallbackTriggeredForMessageRef.current = false;
+      blockedUrlRef.current = null;
+      window.clearTimeout(fallbackTimeoutRef.current);
     }
 
     const newContent = normalizedContent.slice(processedContentRef.current.length);
@@ -261,6 +325,9 @@ export function LiveDmAudioStreamer({ messageId, content, dmStatus, enabled = tr
     const { chunks, remaining } = extractSpeakableChunks(pendingTextRef.current, force);
     pendingTextRef.current = remaining;
     void sendChunks(chunks);
+    if (force && normalizedContent.trim()) {
+      scheduleSilentFallback(normalizedContent);
+    }
 
     return undefined;
   }, [dmStatus, messageId, normalizedContent, shouldBeActive]);
@@ -285,6 +352,7 @@ export function LiveDmAudioStreamer({ messageId, content, dmStatus, enabled = tr
 
   useEffect(() => () => {
     window.clearTimeout(finalizeTimeoutRef.current);
+    window.clearTimeout(fallbackTimeoutRef.current);
     revokeObjectUrls();
     if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
       socketRef.current.send(JSON.stringify({ type: "Close" }));

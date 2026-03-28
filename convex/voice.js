@@ -1,6 +1,7 @@
 "use node";
 
 import { action } from "./_generated/server";
+import { v } from "convex/values";
 
 import { internal } from "./_generated/api";
 
@@ -158,5 +159,29 @@ export const createDeepgramToken = action({
     }
 
     return response.json();
+  },
+});
+
+export const synthesizeBrowserFallback = action({
+  args: {
+    transcript: v.string(),
+    provider: v.optional(v.union(v.literal("deepgram"), v.literal("elevenlabs"))),
+    voiceId: v.optional(v.string()),
+  },
+  handler: async (_ctx, args) => {
+    const transcript = normalizeText(args.transcript);
+    if (!transcript) {
+      return { audioUrl: null };
+    }
+
+    const audioUrl = await synthesizeAudio({
+      provider: args.provider || "deepgram",
+      transcript,
+      voiceId: args.voiceId || process.env.DEEPGRAM_DM_VOICE || process.env.DEEPGRAM_VOICE || "aura-2-thalia-en",
+    });
+
+    return {
+      audioUrl: audioUrl || null,
+    };
   },
 });
