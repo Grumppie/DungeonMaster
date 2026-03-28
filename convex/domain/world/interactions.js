@@ -5,7 +5,8 @@ import {
   syncSceneTransitionUnlock,
 } from "./sceneProgress";
 import { recordSceneFact } from "./sceneFacts";
-import { syncSceneStateFromProgress } from "./sceneState";
+import { applySceneStateDelta, syncSceneStateFromProgress } from "./sceneState";
+import { applyMapInstanceDelta, deriveChangedCellsForInteractable } from "./mapInstances";
 import { runInspectResolverGraph } from "./graph/inspectResolverGraph";
 import { runSceneActionGraph } from "./graph/sceneActionGraph";
 import { runScenarioUpdateGraph } from "./graph/scenarioUpdateGraph";
@@ -47,6 +48,7 @@ export async function applyScenePromptImpact(ctx, {
   runId,
   scene,
   participant,
+  messageId,
   content,
   promptMode,
   sourceKind,
@@ -73,6 +75,8 @@ export async function applyScenePromptImpact(ctx, {
   }
 
   contribution ||= inferContribution(promptMode, content, sourceKind);
+  const sceneFactsToPersist = [];
+  const relatedIds = [String(sessionId), String(runId), sourceId].filter(Boolean);
 
   if (contribution.discovery) {
     await markSceneDiscovery(ctx, scene._id);
@@ -97,27 +101,59 @@ export async function applyScenePromptImpact(ctx, {
       ? `${participant.characterName || participant.displayName} privately investigates ${sourceLabel || "the scene"}.`
       : `${participant.characterName || participant.displayName} acts on ${sourceLabel || "the scene"}.`;
 
-  await recordSceneFact(ctx, {
+  sceneFactsToPersist.push({
     sceneId: scene._id,
+    sourceMessageId: messageId,
     factType: contribution.factType,
     summary: contribution.factSummary || summary,
     isPublic: contribution.isPublic ?? visibility === "party",
-    relatedIds: [String(sessionId), String(runId), sourceId].filter(Boolean),
+    targetParticipantId: visibility === "private" ? participant._id : undefined,
+    relatedIds,
   });
+
+  for (const unlock of contribution.unlocks || []) {
+    sceneFactsToPersist.push({
+      sceneId: scene._id,
+      sourceMessageId: messageId,
+      factType: "unlock",
+      summary: `${participant.characterName || participant.displayName} uncovers ${String(unlock).replace(/[_-]+/g, " ")}.`,
+      isPublic: visibility === "party",
+      targetParticipantId: visibility === "private" ? participant._id : undefined,
+      relatedIds: [...relatedIds, String(unlock)],
+    });
+  }
 
   const scenarioUpdate = await runScenarioUpdateGraph({
     scene,
     trigger: sourceKind || promptMode,
   });
+  let scenarioKey = null;
   if (scenarioUpdate) {
-    await ctx.db.insert("sceneMicroScenarios", {
-      sceneId: scene._id,
-      scenarioKey: scenarioUpdate.scenarioKey,
-      status: "active",
-      summary: scenarioUpdate.summary,
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-    });
+    const existingScenarios = await ctx.db
+      .query("sceneMicroScenarios")
+      .withIndex("by_scene", (q) => q.eq("sceneId", scene._id))
+      .collect();
+    const duplicateScenario = existingScenarios.find(
+      (entry) => entry.scenarioKey === scenarioUpdate.scenarioKey && entry.status === "active",
+    );
+    if (!duplicateScenario) {
+      const insertedScenarioId = await ctx.db.insert("sceneMicroScenarios", {
+        sceneId: scene._id,
+        scenarioKey: scenarioUpdate.scenarioKey,
+        status: "active",
+        summary: scenarioUpdate.summary,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      });
+      scenarioKey = scenarioUpdate.scenarioKey;
+      sceneFactsToPersist.push({
+        sceneId: scene._id,
+        factType: "micro_scenario",
+        summary: scenarioUpdate.summary,
+        isPublic: true,
+        relatedIds: [...relatedIds, String(insertedScenarioId)],
+      });
+    }
   }
 
   const currentProgress = await ctx.db
@@ -129,7 +165,7 @@ export async function applyScenePromptImpact(ctx, {
     stallCounter: currentProgress?.stallCounter || 0,
   });
   if (stallRecovery) {
-    await recordSceneFact(ctx, {
+    sceneFactsToPersist.push({
       sceneId: scene._id,
       factType: "stall_recovery",
       summary: stallRecovery.summary,
@@ -137,4 +173,40 @@ export async function applyScenePromptImpact(ctx, {
       relatedIds: [String(sessionId)],
     });
   }
+
+  const changedCells = [
+    ...(contribution.changedCells || []),
+    ...(sourceId ? deriveChangedCellsForInteractable(scene, sourceId) : []),
+    ...(scenarioUpdate?.changedCells || []),
+  ];
+  const revealedInteractableIds = [
+    ...(contribution.revealInteractableIds || []),
+    ...(stallRecovery?.revealInteractableIds || []),
+  ];
+  const activateTransitionAnchors = Boolean(
+    contribution.activateTransitionAnchors ||
+      scenarioUpdate?.activateTransitionAnchors ||
+      currentProgress?.transitionUnlocked,
+  );
+
+  await applyMapInstanceDelta(ctx, {
+    sceneId: scene._id,
+    revealedInteractableIds,
+    changedCells,
+    activateTransitionAnchors,
+  });
+
+  await applySceneStateDelta(ctx, {
+    sceneId: scene._id,
+    revealInteractableIds: revealedInteractableIds,
+    changedTiles: changedCells,
+    addMicroScenarioIds: scenarioKey ? [scenarioKey] : [],
+    pressureDelta: Math.max(contribution.pressureDelta || 0, scenarioUpdate?.pressureDelta || 0, stallRecovery?.pressureDelta || 0),
+    pressureLabel:
+      scenarioUpdate?.pressureDelta || stallRecovery?.pressureDelta
+        ? "The scene pressure hardens around the party's position."
+        : undefined,
+  });
+
+  await Promise.all(sceneFactsToPersist.map((fact) => recordSceneFact(ctx, fact)));
 }

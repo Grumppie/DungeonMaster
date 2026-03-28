@@ -14,5 +14,7 @@ export async function runStallRecoveryGraph({ scene, stallCounter = 0 }) {
     mode: plan.mode,
     summary: cues[Math.min(cues.length - 1, stallCounter - plan.triggerAfterInteractions)],
     pressureDelta: stallCounter >= plan.triggerAfterInteractions + 1 ? 1 : 0,
+    revealInteractableIds: ((scene.interactables || []).filter((entry) => !entry.hidden).slice(0, 1).map((entry) => entry.id)),
+    activateTransitionAnchors: false,
   };
 }

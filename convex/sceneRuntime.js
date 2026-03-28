@@ -100,6 +100,19 @@ export const shareSceneMessage = mutation({
         }),
       ),
     );
+
+    const matchingFacts = await ctx.db
+      .query("sceneFacts")
+      .withIndex("by_scene_source", (q) => q.eq("sceneId", message.sceneId).eq("sourceMessageId", message._id))
+      .collect();
+    await Promise.all(
+      matchingFacts.map((entry) =>
+        ctx.db.patch(entry._id, {
+          isPublic: true,
+          targetParticipantId: undefined,
+        }),
+      ),
+    );
     return { shared: true };
   },
 });

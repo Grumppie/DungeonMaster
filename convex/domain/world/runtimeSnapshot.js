@@ -1,6 +1,6 @@
 import { buildSceneMapInstance } from "./mapInstances";
 import { buildSceneProjection } from "./sceneState";
-import { normalizeVisibleMessages, normalizeVoiceEvents } from "./runtimeVisibility";
+import { normalizeVisibleMessages, normalizeVisibleSceneFacts, normalizeVoiceEvents } from "./runtimeVisibility";
 
 export const DEFAULT_PROMPT_RAIL = [
   { key: "ask", label: "Ask For A Ruling" },
@@ -58,6 +58,7 @@ export async function loadSceneRuntimeSnapshot(ctx, sessionId, participantId) {
   const mapInstance = projection.mapInstance || buildSceneMapInstance(activeScene);
   const visibleMessages = normalizeVisibleMessages(messages, participantId);
   const visibleVoiceEvents = normalizeVoiceEvents(voiceEvents.reverse(), participantId);
+  const visibleSceneFacts = normalizeVisibleSceneFacts(projection.sceneFacts || [], participantId);
   const { _id: _sceneStateId, _creationTime: _sceneStateCreatedAt, ...sceneStateFields } =
     projection.sceneState || {};
 
@@ -72,7 +73,7 @@ export async function loadSceneRuntimeSnapshot(ctx, sessionId, participantId) {
     sceneState: projection.sceneState || null,
     sceneProgress: projection.sceneProgress || null,
     mapInstance,
-    sceneFacts: projection.sceneFacts || [],
+    sceneFacts: visibleSceneFacts,
     messages: visibleMessages,
     transcriptHistory: visibleVoiceEvents,
   };

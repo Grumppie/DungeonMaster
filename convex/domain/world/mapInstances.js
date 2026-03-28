@@ -102,3 +102,46 @@ export function getTransitionAnchorForCell(mapInstance, x, y) {
     mapInstance?.transitionAnchors?.find((anchor) => anchor.x === x && anchor.y === y) || null
   );
 }
+
+function unique(values) {
+  return [...new Set((values || []).filter(Boolean))];
+}
+
+export async function applyMapInstanceDelta(
+  ctx,
+  { sceneId, revealedInteractableIds = [], changedCells = [], activateTransitionAnchors = false },
+) {
+  const mapInstance = await getSceneMapInstance(ctx, sceneId);
+  if (!mapInstance) {
+    return null;
+  }
+
+  const nextTransitionAnchors = activateTransitionAnchors
+    ? (mapInstance.transitionAnchors || []).map((anchor) => ({
+        ...anchor,
+        isActive: true,
+        blockerReason: undefined,
+      }))
+    : mapInstance.transitionAnchors;
+
+  await ctx.db.patch(mapInstance._id, {
+    version: (mapInstance.version || 1) + 1,
+    revealedInteractableIds: unique([
+      ...(mapInstance.revealedInteractableIds || []),
+      ...revealedInteractableIds,
+    ]),
+    changedCells: unique([...(mapInstance.changedCells || []), ...changedCells]),
+    transitionAnchors: nextTransitionAnchors,
+    updatedAt: Date.now(),
+  });
+
+  return ctx.db.get(mapInstance._id);
+}
+
+export function deriveChangedCellsForInteractable(scene, interactableId) {
+  const interactable = (scene?.interactables || []).find((entry) => entry.id === interactableId);
+  if (!interactable?.position) {
+    return [];
+  }
+  return [cellKey(interactable.position.x, interactable.position.y)];
+}

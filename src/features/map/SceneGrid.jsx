@@ -45,13 +45,14 @@ export function SceneGrid({
           sceneProgress={sceneProgress}
           selectedCell={selectedCell}
           speakerName={speakerName}
+          activeScene={activeScene}
         />
         <div className="runtime-map-grid">
           {mapState.cells.map((cell) => (
             <button
               key={cell.key}
               type="button"
-              className={`runtime-map-cell terrain-${cell.terrainClass} ${cell.templateCell?.blocked ? "blocked" : ""} ${cell.boundaryCell ? "boundary" : ""} ${cell.objectiveLead ? "objective-lead" : ""} ${cell.isSelected ? "selected" : ""} ${cell.isTargeted ? "targeted" : ""} ${cell.isTransitionAnchor ? (cell.transitionUnlocked ? "transition-open" : "transition-locked") : ""}`}
+              className={`runtime-map-cell terrain-${cell.terrainClass} ${cell.templateCell?.blocked ? "blocked" : ""} ${cell.boundaryCell ? "boundary" : ""} ${cell.objectiveLead ? "objective-lead" : ""} ${cell.isChanged ? "changed" : ""} ${cell.isSelected ? "selected" : ""} ${cell.isTargeted ? "targeted" : ""} ${cell.isTransitionAnchor ? (cell.transitionUnlocked ? "transition-open" : "transition-locked") : ""}`}
               onClick={() => {
                 onSelectCell({
                   x: cell.x,

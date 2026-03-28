@@ -45,6 +45,7 @@ export async function submitPlayerPromptForParticipant(ctx, {
     runId: runtime.run._id,
     scene: runtime.activeScene,
     participant,
+    messageId,
     content: trimmedContent,
     promptMode: promptMode ?? "auto",
     sourceKind,

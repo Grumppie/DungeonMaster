@@ -17,7 +17,7 @@ export const ACT_STATES = {
 
 export const PRESSURE_TIERS = {
   LOW: "low",
-  RISING: "rising",
+  MEDIUM: "medium",
   HIGH: "high",
   CRITICAL: "critical",
 };

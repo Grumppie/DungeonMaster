@@ -89,3 +89,52 @@ export async function buildSceneProjection(ctx, { scene }) {
     sceneFacts: facts,
   };
 }
+
+function unique(values) {
+  return [...new Set((values || []).filter(Boolean))];
+}
+
+function advancePressureTier(current, delta = 0) {
+  const order = ["low", "medium", "high", "critical"];
+  const index = Math.max(0, order.indexOf(current || "low"));
+  return order[Math.min(order.length - 1, index + Math.max(0, delta))];
+}
+
+export async function applySceneStateDelta(
+  ctx,
+  {
+    sceneId,
+    revealInteractableIds = [],
+    changedTiles = [],
+    addMicroScenarioIds = [],
+    pressureDelta = 0,
+    pressureLabel,
+  },
+) {
+  const sceneState = await ctx.db
+    .query("sceneStates")
+    .withIndex("by_scene", (q) => q.eq("sceneId", sceneId))
+    .unique();
+
+  if (!sceneState) {
+    return null;
+  }
+
+  await ctx.db.patch(sceneState._id, {
+    revealedInteractableIds: unique([
+      ...(sceneState.revealedInteractableIds || []),
+      ...revealInteractableIds,
+    ]),
+    changedTiles: unique([...(sceneState.changedTiles || []), ...changedTiles]),
+    activeMicroScenarioIds: unique([
+      ...(sceneState.activeMicroScenarioIds || []),
+      ...addMicroScenarioIds,
+    ]),
+    currentPressure: pressureLabel || sceneState.currentPressure,
+    pressureTier: advancePressureTier(sceneState.pressureTier, pressureDelta),
+    lastMeaningfulActionAt: Date.now(),
+    updatedAt: Date.now(),
+  });
+
+  return ctx.db.get(sceneState._id);
+}

@@ -1,6 +1,7 @@
 import React from "react";
 
 import { SceneObjectiveCard } from "../scene/SceneObjectiveCard";
+import { SceneEventFeed } from "../scene/SceneEventFeed";
 import { SceneProgressChips } from "../scene/SceneProgressChips";
 
 export function RuntimeCommandDeck({
@@ -12,6 +13,7 @@ export function RuntimeCommandDeck({
   combat,
   activeTranscript,
   latestDmMessage,
+  sceneFacts,
 }) {
   const progressHint = sceneProgress?.transitionUnlocked
     ? "The exit is unlocked. Move the party through the open anchor when you are ready."
@@ -47,6 +49,8 @@ export function RuntimeCommandDeck({
           <p className="beta-copy">{nextStepText}</p>
         </div>
       </div>
+
+      <SceneEventFeed sceneFacts={sceneFacts} />
     </section>
   );
 }

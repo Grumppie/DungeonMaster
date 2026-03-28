@@ -278,13 +278,17 @@ export default defineSchema({
 
   sceneFacts: defineTable({
     sceneId: v.id("adventureScenes"),
+    sourceMessageId: v.optional(v.id("sceneMessages")),
     factType: v.string(),
     summary: v.string(),
     isPublic: v.boolean(),
+    targetParticipantId: v.optional(v.id("sessionParticipants")),
     relatedIds: v.optional(v.array(v.string())),
     createdAt: v.number(),
     updatedAt: v.number(),
-  }).index("by_scene", ["sceneId", "createdAt"]),
+  })
+    .index("by_scene", ["sceneId", "createdAt"])
+    .index("by_scene_source", ["sceneId", "sourceMessageId", "createdAt"]),
 
   sceneProgress: defineTable({
     sceneId: v.id("adventureScenes"),

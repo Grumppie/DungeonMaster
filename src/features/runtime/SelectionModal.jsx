@@ -24,6 +24,9 @@ export function SelectionModal({
   const interactable = selectedCell.interactable || null;
   const target = combat?.combatants?.find((entry) => entry._id === selectedCombatTarget) || null;
   const objective = activeScene?.objective || "Explore the current scene.";
+  const investigationRule = interactable
+    ? (activeScene?.investigationRules || []).find((rule) => rule.sourceId === interactable.id)
+    : null;
 
   function renderActions() {
     if (combatant) {
@@ -154,6 +157,14 @@ export function SelectionModal({
               ? `This ${interactable.kind} can be ${interactable.interactionModes?.join(", ") || "inspected"}.`
               : `Use this space to investigate the terrain. Current objective: ${objective}`}
         </p>
+
+        {interactable ? (
+          <p className="focus-target-line">
+            {investigationRule
+              ? `This interaction can advance discovery${investigationRule.progressDelta ? ` (+${investigationRule.progressDelta})` : ""}.`
+              : "This is a local interaction point on the current board."}
+          </p>
+        ) : null}
 
         {target ? (
           <p className="focus-target-line">

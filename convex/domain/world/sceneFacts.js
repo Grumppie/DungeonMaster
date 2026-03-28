@@ -6,12 +6,17 @@ export async function listSceneFacts(ctx, sceneId) {
     .collect();
 }
 
-export async function recordSceneFact(ctx, { sceneId, factType, summary, isPublic = true, relatedIds }) {
+export async function recordSceneFact(
+  ctx,
+  { sceneId, sourceMessageId, factType, summary, isPublic = true, targetParticipantId, relatedIds },
+) {
   return ctx.db.insert("sceneFacts", {
     sceneId,
+    sourceMessageId,
     factType,
     summary,
     isPublic,
+    targetParticipantId,
     relatedIds: relatedIds || [],
     createdAt: Date.now(),
     updatedAt: Date.now(),

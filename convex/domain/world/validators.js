@@ -105,8 +105,10 @@ export const transitionAnchorValidator = v.object({
 });
 
 export const sceneFactValidator = v.object({
+  sourceMessageId: v.optional(v.string()),
   factType: v.string(),
   summary: v.string(),
   isPublic: v.boolean(),
+  targetParticipantId: v.optional(v.string()),
   relatedIds: v.optional(v.array(v.string())),
 });

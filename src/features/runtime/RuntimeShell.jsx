@@ -49,6 +49,7 @@ export function RuntimeShell({
     latestDmMessage,
     dmHistoryItems,
     partyHistory,
+    sceneFacts,
     transcriptAudioHistory,
     speakerName,
   } = useRuntimeController({ session, adventure, sceneRuntime });
@@ -121,6 +122,7 @@ export function RuntimeShell({
         combat={combat}
         activeTranscript={activeTranscript}
         latestDmMessage={latestDmMessage}
+        sceneFacts={sceneFacts}
       />
 
       <RuntimePlayfield

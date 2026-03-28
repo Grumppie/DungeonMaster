@@ -10,10 +10,10 @@ function getSelectedLabel(selectedCell) {
   if (selectedCell.combatant?.displayName || selectedCell.combatant?.name) {
     return selectedCell.combatant.displayName || selectedCell.combatant.name;
   }
-  return `Tile ${selectedCell.x},${selectedCell.y}`;
+  return "This spot";
 }
 
-export function MapOverlay({ sceneProgress, selectedCell, speakerName }) {
+export function MapOverlay({ sceneProgress, selectedCell, speakerName, activeScene }) {
   const selectedLabel = getSelectedLabel(selectedCell);
 
   return (
@@ -25,8 +25,8 @@ export function MapOverlay({ sceneProgress, selectedCell, speakerName }) {
         <span className="status-pill">
           Commitment {sceneProgress?.commitmentCompleted ? "1/1" : "0/1"}
         </span>
-        {sceneProgress?.pressureTier ? (
-          <span className="status-pill">Pressure {sceneProgress.pressureTier}</span>
+        {activeScene?.pressureTier ? (
+          <span className="status-pill">Pressure {activeScene.pressureTier}</span>
         ) : null}
         {speakerName ? <span className="status-pill">Speaker {speakerName}</span> : null}
         {selectedLabel ? (

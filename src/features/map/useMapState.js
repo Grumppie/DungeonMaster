@@ -158,12 +158,16 @@ export function useMapState({
     const combatantMap = buildCombatantCellMap(combat?.combatants || []);
     const participantMap = buildParticipantCellMap(participants || [], currentParticipantId);
     const combatActive = combat?.encounter?.status === "active";
-    const interactables = activeScene?.interactables || [];
+    const revealedInteractableIds = new Set(mapInstance?.revealedInteractableIds || []);
+    const interactables = (activeScene?.interactables || []).filter(
+      (item) => !item.hidden || revealedInteractableIds.has(item.id),
+    );
     const objectiveKeywords = buildObjectiveKeywords(activeScene);
     const interactableMap = new Map(
       interactables.map((item) => [makeGridCellKey(item.position.x, item.position.y), item]),
     );
     const transitionUnlocked = Boolean(sceneProgress?.transitionUnlocked);
+    const changedCells = new Set(mapInstance?.changedCells || []);
 
     const cells = Array.from({ length: width * height }, (_, index) => {
       const x = index % width;
@@ -187,6 +191,7 @@ export function useMapState({
       const isTransitionAnchor = Boolean(
         mapInstance?.transitionAnchors?.some((anchor) => anchor.x === x && anchor.y === y),
       );
+      const isChanged = changedCells.has(key);
 
       return {
         x,
@@ -208,6 +213,7 @@ export function useMapState({
         terrainGlyph,
         isTransitionAnchor,
         transitionUnlocked,
+        isChanged,
       };
     });
 

@@ -4,6 +4,7 @@ import {
   selectActiveScene,
   selectDmHistory,
   selectLatestDmMessage,
+  selectSceneFacts,
   selectTranscriptAudioHistory,
   selectPartyHistory,
   selectSpeakerName,
@@ -26,6 +27,10 @@ export function useRuntimeController({ session, adventure, sceneRuntime }) {
     () => selectPartyHistory(adventure),
     [adventure],
   );
+  const sceneFacts = useMemo(
+    () => selectSceneFacts(sceneRuntime),
+    [sceneRuntime],
+  );
   const transcriptAudioHistory = useMemo(
     () => selectTranscriptAudioHistory(sceneRuntime),
     [sceneRuntime],
@@ -40,6 +45,7 @@ export function useRuntimeController({ session, adventure, sceneRuntime }) {
     latestDmMessage,
     dmHistoryItems,
     partyHistory,
+    sceneFacts,
     transcriptAudioHistory,
     speakerName,
   };
