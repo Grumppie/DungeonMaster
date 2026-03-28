@@ -20,10 +20,11 @@ Canonical files:
 - `RuntimeRulesPanel.jsx` for corpus/rules view
 - `RuntimeCommandDeck.jsx` for objective/progress/next-step composition
 - `RuntimePlayfield.jsx` for map + DM command sidecar composition
-- `RuntimeHistoryModals.jsx` for secondary historical surfaces
+- `RuntimeHistoryModals.jsx` for wiring history drawers only
 - `DmCommandPanel.jsx` for DM command/history/transcript lane composition
 
 Forbidden patterns:
 - reconstructing authoritative scene state from raw messages inside the shell
 - adding backend/domain rules directly in JSX event handlers
+- keeping map selection or history presentation components inside the runtime feature when dedicated map/transcript surfaces exist
 - growing `RuntimeShell.jsx` or `useSessionRuntime.js` into monoliths instead of extracting focused child modules

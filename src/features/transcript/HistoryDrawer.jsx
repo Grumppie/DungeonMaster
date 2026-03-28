@@ -1,13 +1,13 @@
 import React from "react";
 
-export function HistoryModal({ title, items, open, onClose, emptyText, renderItem }) {
+export function HistoryDrawer({ title, items, open, onClose, emptyText, renderItem }) {
   if (!open) {
     return null;
   }
 
   return (
-    <div className="selection-modal-backdrop" onClick={onClose}>
-      <section className="panel history-modal" onClick={(event) => event.stopPropagation()}>
+    <div className="history-drawer-backdrop" onClick={onClose}>
+      <aside className="panel history-drawer-panel" onClick={(event) => event.stopPropagation()}>
         <div className="runtime-transcript-head">
           <div>
             <p className="eyebrow">History</p>
@@ -18,10 +18,10 @@ export function HistoryModal({ title, items, open, onClose, emptyText, renderIte
           </button>
         </div>
 
-        <div className="history-modal-list">
+        <div className="history-drawer-list">
           {items?.length ? items.map(renderItem) : <p className="beta-copy">{emptyText}</p>}
         </div>
-      </section>
+      </aside>
     </div>
   );
 }

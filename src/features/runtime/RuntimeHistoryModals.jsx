@@ -1,6 +1,6 @@
 import React from "react";
 
-import { HistoryModal } from "./HistoryModal";
+import { HistoryDrawer } from "../transcript/HistoryDrawer";
 
 export function RuntimeHistoryModals({
   showDmHistory,
@@ -12,7 +12,7 @@ export function RuntimeHistoryModals({
 }) {
   return (
     <>
-      <HistoryModal
+      <HistoryDrawer
         title="DM History"
         open={showDmHistory}
         onClose={onCloseDmHistory}
@@ -26,7 +26,7 @@ export function RuntimeHistoryModals({
         )}
       />
 
-      <HistoryModal
+      <HistoryDrawer
         title="Party History"
         open={showPartyHistory}
         onClose={onClosePartyHistory}

@@ -1,13 +1,6 @@
 import React from "react";
 
-function buildCellLabel(selectedCell) {
-  if (!selectedCell) {
-    return "this spot";
-  }
-  return "this spot";
-}
-
-export function SelectionModal({
+export function SelectionPopover({
   selectedCell,
   selectedCombatTarget,
   activeScene,
@@ -33,7 +26,7 @@ export function SelectionModal({
       const name = combatant.displayName || combatant.name;
       const enemy = combatant.side === "enemy";
       return (
-        <div className="selection-modal-actions">
+        <div className="selection-popover-actions">
           {enemy ? (
             <button type="button" onClick={() => onSelectTarget(combatant._id)}>
               Set Target
@@ -44,13 +37,13 @@ export function SelectionModal({
             className="secondary"
             onClick={() =>
               onQuickPrompt({
-              promptMode: "inspect",
-              content: `I study ${name} and the immediate battlefield around them. What stands out?`,
-              sourceKind: "combatant",
-              sourceId: combatant._id,
-              sourceLabel: name,
-            })
-          }
+                promptMode: "inspect",
+                content: `I study ${name} and the immediate battlefield around them. What stands out?`,
+                sourceKind: "combatant",
+                sourceId: combatant._id,
+                sourceLabel: name,
+              })
+            }
           >
             Read
           </button>
@@ -59,13 +52,13 @@ export function SelectionModal({
             className="secondary"
             onClick={() =>
               onQuickPrompt({
-              promptMode: "speak",
-              content: `I address ${name} directly.`,
-              sourceKind: "npc",
-              sourceId: combatant._id,
-              sourceLabel: name,
-            })
-          }
+                promptMode: "speak",
+                content: `I address ${name} directly.`,
+                sourceKind: "npc",
+                sourceId: combatant._id,
+                sourceLabel: name,
+              })
+            }
           >
             Speak
           </button>
@@ -77,7 +70,7 @@ export function SelectionModal({
       const mode = interactable.interactionModes?.[0] || "inspect";
       const verb = mode === "speak" ? "Speak" : mode === "use" ? "Use" : mode === "loot" ? "Loot" : "Inspect";
       return (
-        <div className="selection-modal-actions">
+        <div className="selection-popover-actions">
           <button
             type="button"
             onClick={() =>
@@ -112,7 +105,7 @@ export function SelectionModal({
     }
 
     return (
-      <div className="selection-modal-actions">
+      <div className="selection-popover-actions">
         <button
           type="button"
           onClick={() =>
@@ -132,48 +125,46 @@ export function SelectionModal({
   }
 
   return (
-    <div className="selection-modal-backdrop" onClick={onClose}>
-      <section className="panel selection-modal" onClick={(event) => event.stopPropagation()}>
-        <div className="runtime-transcript-head">
-          <div>
-            <p className="eyebrow">Selection</p>
-            <h3>
-              {combatant
-                ? combatant.displayName || combatant.name
-                : interactable
-                  ? interactable.label
-                  : buildCellLabel(selectedCell)}
-            </h3>
-          </div>
-          <button type="button" className="secondary" onClick={onClose}>
-            Close
-          </button>
+    <section className="panel selection-popover">
+      <div className="runtime-transcript-head">
+        <div>
+          <p className="eyebrow">Selection</p>
+          <h3>
+            {combatant
+              ? combatant.displayName || combatant.name
+              : interactable
+                ? interactable.label
+                : "This spot"}
+          </h3>
         </div>
+        <button type="button" className="secondary" onClick={onClose}>
+          Close
+        </button>
+      </div>
 
-        <p className="beta-copy">
-          {combatant
-            ? `${combatant.side === "enemy" ? "Enemy" : "Party member"} on the field. ${combatant.currentHp}/${combatant.maxHp} HP.`
-            : interactable
-              ? `This ${interactable.kind} can be ${interactable.interactionModes?.join(", ") || "inspected"}.`
-              : `Use this space to investigate the terrain. Current objective: ${objective}`}
+      <p className="beta-copy">
+        {combatant
+          ? `${combatant.side === "enemy" ? "Enemy" : "Party member"} on the field. ${combatant.currentHp}/${combatant.maxHp} HP.`
+          : interactable
+            ? `This ${interactable.kind} can be ${interactable.interactionModes?.join(", ") || "inspected"}.`
+            : `Use this space to investigate the terrain. Current objective: ${objective}`}
+      </p>
+
+      {interactable ? (
+        <p className="focus-target-line">
+          {investigationRule
+            ? `This interaction can advance discovery${investigationRule.progressDelta ? ` (+${investigationRule.progressDelta})` : ""}.`
+            : "This is a local interaction point on the current board."}
         </p>
+      ) : null}
 
-        {interactable ? (
-          <p className="focus-target-line">
-            {investigationRule
-              ? `This interaction can advance discovery${investigationRule.progressDelta ? ` (+${investigationRule.progressDelta})` : ""}.`
-              : "This is a local interaction point on the current board."}
-          </p>
-        ) : null}
+      {target ? (
+        <p className="focus-target-line">
+          Current target: <strong>{target.displayName || target.name}</strong>
+        </p>
+      ) : null}
 
-        {target ? (
-          <p className="focus-target-line">
-            Current target: <strong>{target.displayName || target.name}</strong>
-          </p>
-        ) : null}
-
-        {renderActions()}
-      </section>
-    </div>
+      {renderActions()}
+    </section>
   );
 }

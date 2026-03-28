@@ -16,6 +16,7 @@ Canonical files:
 - `useMapState.js` for derived board-state projection
 - `MapLegend.jsx` for map status chips
 - `MapOverlay.jsx` for in-map progress/speaker/selection context
+- `SelectionPopover.jsx` for compact tile/interactable/combatant action surfacing
 
 Future changes that affect what a tile means should start in backend scene/map contracts first, then flow into this feature.
 

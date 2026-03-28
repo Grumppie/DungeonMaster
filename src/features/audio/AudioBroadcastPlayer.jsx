@@ -1,5 +1,7 @@
 import React, { useEffect, useRef } from "react";
 
+import { useVoiceUnlock } from "./useVoiceUnlock";
+
 function getEntryKey(entry) {
   return entry?._id || `${entry?.createdAt}-${entry?.speakerName}-${entry?.transcript}`;
 }
@@ -11,6 +13,7 @@ export function AudioBroadcastPlayer({ history = [] }) {
   const pendingEntriesRef = useRef([]);
   const currentEntryRef = useRef(null);
   const awaitingGestureRef = useRef(false);
+  const { isVoiceUnlocked } = useVoiceUnlock();
 
   function playNext() {
     if (!audioRef.current || currentEntryRef.current || !pendingEntriesRef.current.length) {
@@ -31,6 +34,9 @@ export function AudioBroadcastPlayer({ history = [] }) {
   }
 
   useEffect(() => {
+    if (!isVoiceUnlocked) {
+      return;
+    }
     const entries = (history || []).filter((entry) => entry?.audioUrl);
     if (!initializedRef.current) {
       for (const entry of entries) {
@@ -47,7 +53,7 @@ export function AudioBroadcastPlayer({ history = [] }) {
     }
 
     playNext();
-  }, [history]);
+  }, [history, isVoiceUnlocked]);
 
   useEffect(() => {
     function retryPlayback() {

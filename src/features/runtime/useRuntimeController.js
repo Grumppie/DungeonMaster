@@ -2,13 +2,15 @@ import { useMemo } from "react";
 
 import {
   selectActiveScene,
+  selectSceneFacts,
+  selectPartyHistory,
+} from "./runtimeSelectors";
+import {
   selectDmHistory,
   selectLatestDmMessage,
-  selectSceneFacts,
-  selectTranscriptAudioHistory,
-  selectPartyHistory,
   selectSpeakerName,
-} from "./runtimeSelectors";
+  selectTranscriptAudioHistory,
+} from "../transcript/transcriptSelectors";
 
 export function useRuntimeController({ session, adventure, sceneRuntime }) {
   const activeScene = useMemo(

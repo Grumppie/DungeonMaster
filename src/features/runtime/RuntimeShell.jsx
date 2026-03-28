@@ -4,7 +4,7 @@ import { PlayerHud } from "../hud/PlayerHud";
 import { ActionTray } from "../combat/ActionTray";
 import { SheetDrawer } from "../sheet/SheetDrawer";
 import { AudioBroadcastPlayer } from "../audio/AudioBroadcastPlayer";
-import { SelectionModal } from "./SelectionModal";
+import { SelectionPopover } from "../map/SelectionPopover";
 import { RuntimeHistoryModals } from "./RuntimeHistoryModals";
 import { RuntimeCommandDeck } from "./RuntimeCommandDeck";
 import { RuntimePlayfield } from "./RuntimePlayfield";
@@ -155,7 +155,7 @@ export function RuntimeShell({
 
       <AudioBroadcastPlayer history={transcriptAudioHistory} />
 
-      <SelectionModal
+      <SelectionPopover
         selectedCell={selectedCell}
         selectedCombatTarget={selectedCombatTarget}
         activeScene={activeScene}
