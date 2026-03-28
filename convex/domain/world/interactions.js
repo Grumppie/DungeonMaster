@@ -9,8 +9,7 @@ import { applySceneStateDelta, syncSceneStateFromProgress } from "./sceneState";
 import { applyMapInstanceDelta, deriveChangedCellsForInteractable } from "./mapInstances";
 import { runInspectResolverGraph } from "./graph/inspectResolverGraph";
 import { runSceneActionGraph } from "./graph/sceneActionGraph";
-import { runScenarioUpdateGraph } from "./graph/scenarioUpdateGraph";
-import { runStallRecoveryGraph } from "./graph/stallRecoveryGraph";
+import { resolveSceneScenarioUpdates } from "./scenarioUpdates";
 import { runNpcConversationGraph } from "../npc/graph/npcConversationGraph";
 import { applyNpcStateDelta } from "../npc/state";
 
@@ -150,56 +149,19 @@ export async function applyScenePromptImpact(ctx, {
     });
   }
 
-  const scenarioUpdate = await runScenarioUpdateGraph({
-    scene,
-    trigger: sourceKind || promptMode,
-  });
-  let scenarioKey = null;
-  if (scenarioUpdate) {
-    const existingScenarios = await ctx.db
-      .query("sceneMicroScenarios")
-      .withIndex("by_scene", (q) => q.eq("sceneId", scene._id))
-      .collect();
-    const duplicateScenario = existingScenarios.find(
-      (entry) => entry.scenarioKey === scenarioUpdate.scenarioKey && entry.status === "active",
-    );
-    if (!duplicateScenario) {
-      const insertedScenarioId = await ctx.db.insert("sceneMicroScenarios", {
-        sceneId: scene._id,
-        scenarioKey: scenarioUpdate.scenarioKey,
-        status: "active",
-        summary: scenarioUpdate.summary,
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-      });
-      scenarioKey = scenarioUpdate.scenarioKey;
-      sceneFactsToPersist.push({
-        sceneId: scene._id,
-        factType: "micro_scenario",
-        summary: scenarioUpdate.summary,
-        isPublic: true,
-        relatedIds: [...relatedIds, String(insertedScenarioId)],
-      });
-    }
-  }
-
   const currentProgress = await ctx.db
     .query("sceneProgress")
     .withIndex("by_scene", (q) => q.eq("sceneId", scene._id))
     .unique();
-  const stallRecovery = await runStallRecoveryGraph({
-    scene,
-    stallCounter: currentProgress?.stallCounter || 0,
-  });
-  if (stallRecovery) {
-    sceneFactsToPersist.push({
-      sceneId: scene._id,
-      factType: "stall_recovery",
-      summary: stallRecovery.summary,
-      isPublic: true,
-      relatedIds: [String(sessionId)],
+  const { scenarioUpdate, scenarioKey, stallRecovery, sceneFactsToPersist: scenarioFacts } =
+    await resolveSceneScenarioUpdates(ctx, {
+      scene,
+      sessionId,
+      trigger: sourceKind || promptMode,
+      relatedIds,
+      currentProgress,
     });
-  }
+  sceneFactsToPersist.push(...scenarioFacts);
 
   const changedCells = [
     ...(contribution.changedCells || []),

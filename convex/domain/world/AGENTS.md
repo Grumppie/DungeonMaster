@@ -16,6 +16,7 @@ Canonical files:
 - `graph/*` for bounded graph orchestration
 - `graph/respondToPrompt.js` for streamed DM response orchestration
 - `sceneState.js`, `sceneFacts.js`, `sceneProgress.js` for authoritative scene state
+- `scenarioUpdates.js` for applying bounded micro-scenarios and stall-recovery state shifts
 - `runtimeSnapshot.js` and `runtimeVisibility.js` for session-runtime world projection
 - `runtimeQueries.js` for root query payload shaping
 - `playerPrompts.js` and `playerMovement.js` for player-scene world mutations
