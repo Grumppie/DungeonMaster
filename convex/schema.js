@@ -313,6 +313,24 @@ export default defineSchema({
     updatedAt: v.number(),
   }).index("by_scene", ["sceneId"]),
 
+  sceneNpcStates: defineTable({
+    sceneId: v.id("adventureScenes"),
+    npcId: v.string(),
+    sceneRole: v.string(),
+    mood: v.string(),
+    alertState: v.string(),
+    trustByParty: v.number(),
+    hostilityByParty: v.number(),
+    goal: v.string(),
+    canReveal: v.array(v.string()),
+    canDo: v.array(v.string()),
+    status: v.union(v.literal("active"), v.literal("gone"), v.literal("down")),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_scene", ["sceneId"])
+    .index("by_scene_npc", ["sceneId", "npcId"]),
+
   combatEncounters: defineTable({
     sessionId: v.id("gameSessions"),
     runId: v.id("adventureRuns"),

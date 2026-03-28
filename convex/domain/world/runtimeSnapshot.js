@@ -38,6 +38,7 @@ export async function loadSceneRuntimeSnapshot(ctx, sessionId, participantId) {
       sceneProgress: null,
       mapInstance: null,
       sceneFacts: [],
+      npcStates: [],
       messages: [],
       transcriptHistory: [],
     };
@@ -74,6 +75,7 @@ export async function loadSceneRuntimeSnapshot(ctx, sessionId, participantId) {
     sceneProgress: projection.sceneProgress || null,
     mapInstance,
     sceneFacts: visibleSceneFacts,
+    npcStates: projection.npcStates || [],
     messages: visibleMessages,
     transcriptHistory: visibleVoiceEvents,
   };

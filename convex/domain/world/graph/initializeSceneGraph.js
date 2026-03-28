@@ -3,6 +3,7 @@ import { ensureSceneMapInstance } from "../mapInstances";
 import { ensureSceneProgress, syncSceneTransitionUnlock } from "../sceneProgress";
 import { ensureOpeningMessageForScene } from "../sceneMessages";
 import { ensureSceneState, syncSceneStateFromProgress } from "../sceneState";
+import { ensureSceneNpcStates } from "../../npc/state";
 
 export async function runInitializeSceneGraph(ctx, { run, scene }) {
   const mapInstance = await ensureSceneMapInstance(ctx, { scene });
@@ -11,6 +12,7 @@ export async function runInitializeSceneGraph(ctx, { run, scene }) {
     transitionAnchors: mapInstance?.transitionAnchors || [],
   });
   const sceneFacts = await ensureSceneFactsSeeded(ctx, { scene });
+  const npcStates = await ensureSceneNpcStates(ctx, { scene });
   await syncSceneTransitionUnlock(ctx, { sceneId: scene._id });
   const sceneState = await ensureSceneState(ctx, { scene, sceneProgress, mapInstance });
   await syncSceneStateFromProgress(ctx, { sceneId: scene._id });
@@ -25,5 +27,6 @@ export async function runInitializeSceneGraph(ctx, { run, scene }) {
     sceneProgress,
     sceneFacts,
     sceneState,
+    npcStates,
   };
 }

@@ -1,7 +1,12 @@
-export async function runNpcConversationGraph({ npc, scene, trust = 0 }) {
-  const tone = trust > 0 ? "more open" : "guarded";
-  return {
-    npcId: npc?.name || "npc",
-    summary: `${npc?.name || "The NPC"} stays ${tone} while talking in ${scene?.title || "the scene"}.`,
-  };
+import { buildNpcConversationResult } from "../conversation";
+import { getSceneNpcState } from "../state";
+
+export async function runNpcConversationGraph(ctx, { npc, scene, memories = [], visibility = "private" }) {
+  const npcState = await getSceneNpcState(ctx, { sceneId: scene._id, npcId: npc?.name });
+  return buildNpcConversationResult({
+    npc,
+    npcState,
+    memories,
+    visibility,
+  });
 }

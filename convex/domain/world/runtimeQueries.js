@@ -13,6 +13,7 @@ export async function getSessionRuntimePayload(ctx, sessionId, participantId) {
     sceneProgress: runtime.sceneProgress,
     mapInstance: runtime.mapInstance,
     sceneFacts: runtime.sceneFacts,
+    npcStates: runtime.npcStates,
     messages: runtime.messages,
     liveTranscript: runtime.transcriptHistory.slice(-3),
     transcriptHistory: runtime.transcriptHistory,

@@ -81,12 +81,17 @@ export async function buildSceneProjection(ctx, { scene }) {
     .withIndex("by_scene", (q) => q.eq("sceneId", scene._id))
     .order("asc")
     .collect();
+  const npcStates = await ctx.db
+    .query("sceneNpcStates")
+    .withIndex("by_scene", (q) => q.eq("sceneId", scene._id))
+    .collect();
 
   return {
     sceneState,
     sceneProgress,
     mapInstance,
     sceneFacts: facts,
+    npcStates,
   };
 }
 

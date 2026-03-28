@@ -1,15 +1,17 @@
-export async function runNpcDecisionGraph({ npc, mode = "scene" }) {
+import { buildNpcCombatDecision, buildNpcSceneDecision } from "../decisions";
+import { getSceneNpcState } from "../state";
+
+export async function runNpcDecisionGraph(ctx, { npc, sceneId, mode = "scene" }) {
   if (mode === "combat") {
     return {
       npcId: npc?.name || "npc",
-      decisionType: "combat_candidate",
-      summary: `${npc?.name || "The NPC"} proposes a legal combat action candidate.`,
+      ...buildNpcCombatDecision({ npc }),
     };
   }
 
+  const npcState = sceneId ? await getSceneNpcState(ctx, { sceneId, npcId: npc?.name }) : null;
   return {
     npcId: npc?.name || "npc",
-    decisionType: "scene_reaction",
-    summary: `${npc?.name || "The NPC"} reacts to the party inside the current scene bounds.`,
+    ...buildNpcSceneDecision({ npc, npcState }),
   };
 }

@@ -11,6 +11,8 @@ import { runInspectResolverGraph } from "./graph/inspectResolverGraph";
 import { runSceneActionGraph } from "./graph/sceneActionGraph";
 import { runScenarioUpdateGraph } from "./graph/scenarioUpdateGraph";
 import { runStallRecoveryGraph } from "./graph/stallRecoveryGraph";
+import { runNpcConversationGraph } from "../npc/graph/npcConversationGraph";
+import { applyNpcStateDelta } from "../npc/state";
 
 function normalizePromptText(content) {
   return String(content || "").trim().toLowerCase();
@@ -57,7 +59,32 @@ export async function applyScenePromptImpact(ctx, {
   visibility = "private",
 }) {
   let contribution;
-  if (promptMode === "inspect" || sourceKind === "interactable") {
+  const interactable = sourceId
+    ? (scene.interactables || []).find((entry) => entry.id === sourceId)
+    : null;
+  const npc = interactable?.kind === "npc_anchor"
+    ? (scene.npcBriefs || []).find((entry) => {
+        const normalizedLabel = String(interactable.label || "").toLowerCase();
+        const normalizedName = String(entry.name || "").toLowerCase();
+        return normalizedLabel.includes(normalizedName) || normalizedName.includes(normalizedLabel);
+      }) || (scene.npcBriefs || [])[0]
+    : sourceKind === "npc"
+      ? (scene.npcBriefs || []).find((entry) => String(entry.name) === String(sourceLabel)) || (scene.npcBriefs || [])[0]
+      : null;
+
+  if (npc && promptMode === "speak") {
+    const memories = await ctx.db
+      .query("npcMemories")
+      .withIndex("by_npc", (q) => q.eq("npcId", npc.name))
+      .order("desc")
+      .take(12);
+    contribution = await runNpcConversationGraph(ctx, {
+      npc,
+      scene,
+      memories,
+      visibility,
+    });
+  } else if (promptMode === "inspect" || sourceKind === "interactable") {
     contribution = await runInspectResolverGraph({
       scene,
       sourceId,
@@ -176,7 +203,7 @@ export async function applyScenePromptImpact(ctx, {
 
   const changedCells = [
     ...(contribution.changedCells || []),
-    ...(sourceId ? deriveChangedCellsForInteractable(scene, sourceId) : []),
+    ...(sourceId && !npc ? deriveChangedCellsForInteractable(scene, sourceId) : []),
     ...(scenarioUpdate?.changedCells || []),
   ];
   const revealedInteractableIds = [
@@ -207,6 +234,17 @@ export async function applyScenePromptImpact(ctx, {
         ? "The scene pressure hardens around the party's position."
         : undefined,
   });
+
+  if (npc) {
+    await applyNpcStateDelta(ctx, {
+      sceneId: scene._id,
+      npcId: npc.name,
+      trustDelta: contribution.trustDelta || 0,
+      hostilityDelta: contribution.hostilityDelta || 0,
+      mood: contribution.mood,
+      alertState: contribution.alertState,
+    });
+  }
 
   await Promise.all(sceneFactsToPersist.map((fact) => recordSceneFact(ctx, fact)));
 }
