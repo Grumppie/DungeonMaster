@@ -16,7 +16,9 @@ Does not own:
 - world/run generation
 
 Canonical entrypoints:
-- `state.js` for encounter persistence, snapshots, timers, and lifecycle
+- `encounterState.js` for encounter lifecycle and snapshot exports
+- `timers.js` for turn-timer policy
+- `state.js` for turn advancement and shared encounter helpers
 - `resolver.js` for player action legality and resolution
 - `aiTurns.js` for enemy turns and auto-advance behavior
 - `previews.js` for preview payload creation

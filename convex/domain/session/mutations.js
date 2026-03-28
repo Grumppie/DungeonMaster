@@ -2,6 +2,7 @@ import { getOrCreateAppUser } from "../../lib/auth";
 import { getDefaultScenePosition, getNextSeatIndex } from "./participantProjection";
 import { cleanupSessionIfInactive } from "./cleanupPolicy";
 import { getNextEligibleHostUserId } from "./hostPolicy";
+import { markParticipantLeft, setParticipantPresence } from "./presencePolicy";
 import { persistAdventureRunFromBlueprint } from "../world/transitions";
 import { buildFallbackAdventureBlueprint } from "../world/fallbackBlueprint";
 
@@ -196,12 +197,7 @@ export async function updateParticipantPresence(ctx, args) {
     throw new Error("Participant not found.");
   }
 
-  const now = Date.now();
-  await ctx.db.patch(participant._id, {
-    presenceState: args.presenceState,
-    lastSeenAt: now,
-    updatedAt: now,
-  });
+  const now = await setParticipantPresence(ctx, participant._id, args.presenceState);
 
   const session = await ctx.db.get(args.sessionId);
   if (!session) {
@@ -235,13 +231,7 @@ export async function leaveSessionByUser(ctx, args) {
     throw new Error("Session not found.");
   }
 
-  const now = Date.now();
-  await ctx.db.patch(participant._id, {
-    status: "left",
-    presenceState: "offline",
-    lastSeenAt: now,
-    updatedAt: now,
-  });
+  const now = await markParticipantLeft(ctx, participant._id);
 
   const remainingParticipants = (
     await ctx.db

@@ -21,6 +21,7 @@ Canonical files:
 - `mutations.js` for room and participant mutations
 - `hostPolicy.js` for host succession
 - `cleanupPolicy.js` for idle/archival cleanup
+- `presencePolicy.js` for presence and leave-state patching
 - `transitionPolicy.js` for host-gated scene advancement
 - `participantAccess.js` for current-viewer and participant lookup
 - `participantProjection.js` for visible participant shape

@@ -15,6 +15,7 @@ import {
 } from "./helpers";
 import { rollDie } from "./dice";
 import { getOrCreateAppUser } from "../../lib/auth";
+import { buildEncounterTurnDeadline } from "./timers";
 
 export {
   clone,
@@ -24,11 +25,6 @@ export {
   getSaveBonus,
   sortCombatants,
 };
-
-export async function getEncounterTurnTimerSeconds(ctx, sessionId) {
-  const session = await ctx.db.get(sessionId);
-  return session?.turnTimerSeconds || 20;
-}
 
 export async function writeEvent(ctx, encounterId, round, eventType, summary, payload, combatantId) {
   await ctx.db.insert("combatEvents", {
@@ -72,7 +68,7 @@ export async function createEncounterForScene(
 ) {
   const partySize = participants.filter((participant) => participant.status !== "left").length;
   const now = Date.now();
-  const turnTimerSeconds = await getEncounterTurnTimerSeconds(ctx, sessionId);
+  const turnTimerEndsAt = activate ? await buildEncounterTurnDeadline(ctx, sessionId, now) : undefined;
   const encounterId = await ctx.db.insert("combatEncounters", {
     sessionId,
     runId,
@@ -83,7 +79,7 @@ export async function createEncounterForScene(
     currentCombatantId: undefined,
     turnOrder: [],
     turnRevision: 1,
-    turnTimerEndsAt: activate ? now + turnTimerSeconds * 1000 : undefined,
+    turnTimerEndsAt,
     partyDistanceFeet: 30,
     startedAt: now,
     endedAt: undefined,
@@ -153,7 +149,7 @@ export async function createEncounterForScene(
     status: activate ? "active" : "setup",
     activeTurnIndex: 0,
     turnRevision: 1,
-    turnTimerEndsAt: activate ? now + turnTimerSeconds * 1000 : undefined,
+    turnTimerEndsAt,
     updatedAt: now,
   });
 
@@ -306,13 +302,12 @@ export async function advanceToNextCombatant(ctx, encounterId) {
       continue;
     }
 
-    const turnTimerSeconds = await getEncounterTurnTimerSeconds(ctx, encounter.sessionId);
     const turnRevision = (encounter.turnRevision ?? 0) + 1;
     await ctx.db.patch(encounterId, {
       currentCombatantId: nextId,
       activeTurnIndex: currentIndex,
       turnRevision,
-      turnTimerEndsAt: Date.now() + turnTimerSeconds * 1000,
+      turnTimerEndsAt: await buildEncounterTurnDeadline(ctx, encounter.sessionId),
       updatedAt: Date.now(),
     });
     return nextCombatant;
@@ -367,7 +362,6 @@ export async function activateCombatEncounter(ctx, encounterId) {
   );
   const ordered = sortCombatants(combatants);
   const firstLiving = ordered.find((combatant) => !combatant.isDead) || null;
-  const turnTimerSeconds = await getEncounterTurnTimerSeconds(ctx, encounter.sessionId);
   await ctx.db.patch(encounterId, {
     status: "active",
     currentCombatantId: firstLiving ? firstLiving._id : undefined,
@@ -375,7 +369,7 @@ export async function activateCombatEncounter(ctx, encounterId) {
       ? ordered.findIndex((combatant) => combatant._id === firstLiving._id)
       : 0,
     turnRevision: (encounter.turnRevision ?? 0) + 1,
-    turnTimerEndsAt: firstLiving ? Date.now() + turnTimerSeconds * 1000 : undefined,
+    turnTimerEndsAt: firstLiving ? await buildEncounterTurnDeadline(ctx, encounter.sessionId) : undefined,
     updatedAt: Date.now(),
   });
   await writeEvent(

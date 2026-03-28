@@ -11,7 +11,7 @@ import {
   getActiveEncounterForSession,
   loadCombatSnapshot,
   writeEvent,
-} from "./domain/combat/state";
+} from "./domain/combat/encounterState";
 import { primeCombatEncounter, resolvePendingTurns } from "./domain/combat/aiTurns";
 
 async function loadEncounterActor(ctx, sessionId) {

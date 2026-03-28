@@ -2,7 +2,8 @@ import { getCombatantPosition, getGridDistanceFeet, isOccupiedPosition } from ".
 import { applyDamageToCombatant } from "./formations";
 import { getActiveArmorClass, getLivingBySide, getSaveBonus } from "./helpers";
 import { rollDie, rollDice } from "./dice";
-import { advanceToNextCombatant, completeEncounter, writeEvent } from "./state";
+import { completeEncounter, writeEvent } from "./encounterState";
+import { advanceToNextCombatant } from "./state";
 
 export function getNearestEnemy(actor, combatants, side) {
   const candidates = combatants.filter(

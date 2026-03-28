@@ -3,7 +3,7 @@ import { rollDie, rollDice } from "./dice";
 import { consumeResource, consumeSpellSlot } from "./resources";
 import { applyDamageToCombatant, healCombatant } from "./formations";
 import { clone, getActiveArmorClass, getLivingBySide, getSaveBonus } from "./helpers";
-import { completeEncounter, writeEvent } from "./state";
+import { completeEncounter, writeEvent } from "./encounterState";
 
 export async function finalizeEncounterIfResolved(ctx, encounterId) {
   const refreshedCombatants = await ctx.db
