@@ -1,3 +1,5 @@
+import { buildInteractionHintSummary } from "../interactionHints";
+
 function formatUnlock(unlock) {
   return String(unlock || "")
     .replace(/[_-]+/g, " ")
@@ -23,9 +25,7 @@ export async function runInspectResolverGraph({ scene, sourceId, sourceLabel, vi
   }
 
   const unlocks = investigationRule?.unlocks || [];
-  const summary = unlocks.length
-    ? `${interactable.label} reveals ${unlocks.map(formatUnlock).join(", ")}.`
-    : `${interactable.label} yields a closer reading.`;
+  const summary = buildInteractionHintSummary(scene, interactable, unlocks);
 
   return {
     discovery: true,
