@@ -8,6 +8,10 @@ export function selectDmHistory(sceneRuntime) {
   return (sceneRuntime?.messages || []).filter((message) => message.speakerType === "dm" && message.content?.trim());
 }
 
+export function selectRecentDmMessages(sceneRuntime, limit = 3) {
+  return selectDmHistory(sceneRuntime).slice(-limit).reverse();
+}
+
 export function selectTranscriptAudioHistory(sceneRuntime) {
   return (sceneRuntime?.transcriptHistory || []).filter((entry) => entry.audioUrl);
 }

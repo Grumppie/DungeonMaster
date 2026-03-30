@@ -4,6 +4,7 @@ import {
   markSceneDiscovery,
   syncSceneTransitionUnlock,
 } from "./sceneProgress";
+import { internal } from "../../_generated/api";
 import { recordSceneFact } from "./sceneFacts";
 import { applySceneStateDelta, syncSceneStateFromProgress } from "./sceneState";
 import { applyMapInstanceDelta, deriveChangedCellsForInteractable } from "./mapInstances";
@@ -12,6 +13,7 @@ import { runSceneActionGraph } from "./graph/sceneActionGraph";
 import { resolveSceneScenarioUpdates } from "./scenarioUpdates";
 import { runNpcConversationGraph } from "../npc/graph/npcConversationGraph";
 import { applyNpcStateDelta } from "../npc/state";
+import { getTransitionResultForCell } from "./transitions";
 
 function normalizePromptText(content) {
   return String(content || "").trim().toLowerCase();
@@ -209,4 +211,28 @@ export async function applyScenePromptImpact(ctx, {
   }
 
   await Promise.all(sceneFactsToPersist.map((fact) => recordSceneFact(ctx, fact)));
+
+  const sessionParticipants = await ctx.db
+    .query("sessionParticipants")
+    .withIndex("by_session", (q) => q.eq("sessionId", sessionId))
+    .collect();
+
+  for (const sessionParticipant of sessionParticipants) {
+    if (sessionParticipant.status === "left") {
+      continue;
+    }
+
+    const refreshedTransitionResult = await getTransitionResultForCell(ctx, {
+      scene,
+      x: sessionParticipant.sceneX,
+      y: sessionParticipant.sceneY,
+    });
+
+    if (refreshedTransitionResult?.transitioned) {
+      await ctx.runMutation(internal.sessions.advanceSceneFromMapTransition, {
+        sessionId,
+      });
+      break;
+    }
+  }
 }

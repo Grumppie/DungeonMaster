@@ -1,18 +1,15 @@
 import React from "react";
 
 import { LatestDmPanel } from "../transcript/LatestDmPanel";
-import { TranscriptLane } from "../transcript/TranscriptLane";
 
 export function DmCommandPanel({
   currentParticipant,
-  promptRail,
-  promptMode,
   promptDraft,
   promptInputRef,
   busy,
   dmStatus,
   latestDmMessage,
-  onPromptModeClick,
+  recentDmMessages,
   onPromptChange,
   onPromptSubmit,
   onOpenDmHistory,
@@ -24,7 +21,7 @@ export function DmCommandPanel({
       <div className="runtime-transcript-head">
         <div>
           <p className="eyebrow">DM Command</p>
-          <h3>Ask for help or declare a scene action</h3>
+          <h3>Ask the DM or describe one clear scene action</h3>
         </div>
       </div>
       <div className="dm-command-tools">
@@ -34,18 +31,6 @@ export function DmCommandPanel({
         <button type="button" className="secondary" onClick={onOpenPartyHistory}>
           Party History
         </button>
-      </div>
-      <div className="prompt-rail compact prompt-rail-inline">
-        {promptRail.map((item) => (
-          <button
-            key={item.key}
-            type="button"
-            className={promptMode === item.key ? "active" : ""}
-            onClick={() => onPromptModeClick(item.key)}
-          >
-            {item.label}
-          </button>
-        ))}
       </div>
       <form className="runtime-dm-form" onSubmit={onPromptSubmit}>
         <label className="memory-field">
@@ -62,12 +47,8 @@ export function DmCommandPanel({
           {busy === "scene:submit" ? "Sending..." : dmStatus !== "idle" ? "Streaming..." : "Send"}
         </button>
       </form>
-      <TranscriptLane
-        content={latestDmMessage?.content || ""}
-        speakerName={latestDmMessage?.speakerLabel || "DM"}
-        dmStatus={dmStatus}
-      />
       <LatestDmPanel
+        recentDmMessages={recentDmMessages}
         latestDmMessage={latestDmMessage}
         dmStatus={dmStatus}
         onShare={onShareSceneMessage}

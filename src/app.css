@@ -1948,11 +1948,29 @@ button:disabled {
   border-color: rgba(255, 255, 255, 0.14);
 }
 
-.runtime-transcript-item p {
+.runtime-transcript-card-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: start;
+}
+
+.runtime-transcript-copy {
+  white-space: pre-wrap;
+}
+
+.runtime-transcript-copy.clamped {
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+.runtime-transcript-toggle {
+  margin-top: 10px;
+  min-height: 34px;
+  padding: 8px 10px;
+  font-size: 0.78rem;
 }
 
 .runtime-history-item {

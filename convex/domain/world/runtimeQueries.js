@@ -1,4 +1,4 @@
-import { DEFAULT_PROMPT_RAIL, loadSceneRuntimeSnapshot } from "./runtimeSnapshot";
+import { loadSceneRuntimeSnapshot } from "./runtimeSnapshot";
 
 export async function getSessionRuntimePayload(ctx, sessionId, participantId) {
   const runtime = await loadSceneRuntimeSnapshot(ctx, sessionId, participantId);
@@ -12,11 +12,11 @@ export async function getSessionRuntimePayload(ctx, sessionId, participantId) {
     sceneState: runtime.sceneState,
     sceneProgress: runtime.sceneProgress,
     mapInstance: runtime.mapInstance,
+    sceneContext: runtime.sceneContext,
     sceneFacts: runtime.sceneFacts,
     npcStates: runtime.npcStates,
     messages: runtime.messages,
     liveTranscript: runtime.transcriptHistory.slice(-3),
     transcriptHistory: runtime.transcriptHistory,
-    promptRail: DEFAULT_PROMPT_RAIL,
   };
 }

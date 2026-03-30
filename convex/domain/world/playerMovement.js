@@ -59,9 +59,19 @@ export async function moveParticipantTokenForScene(ctx, {
   });
 
   if (transitionResult?.transitioned) {
-    await ctx.runMutation(internal.sessions.advanceSceneFromMapTransition, {
+    const transitionAdvance = await ctx.runMutation(internal.sessions.advanceSceneFromMapTransition, {
       sessionId,
     });
+    return {
+      participantId: participant._id,
+      x,
+      y,
+      transitioned: true,
+      transitionBlocked: false,
+      blockerReason: null,
+      nextSceneId: transitionAdvance?.nextSceneId ?? null,
+      completed: Boolean(transitionAdvance?.completed),
+    };
   }
 
   return {

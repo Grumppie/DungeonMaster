@@ -1,4 +1,3 @@
-import { describeSceneMapLayout } from "../../../../shared/mapTemplates";
 import { buildConservativeRetrievalFallback } from "../../retrieval/conservativeFallback";
 
 const DM_FALLBACK_MODEL = process.env.OPENAI_DM_MODEL || "gpt-4.1-mini";
@@ -81,12 +80,91 @@ function buildRetrievedContext(retrieval) {
     .join("\n");
 }
 
+function buildSceneContextBlock(sceneContext) {
+  if (!sceneContext) {
+    return "Scene context is unavailable. Stay conservative and only restate visible facts from recent transcript.";
+  }
+
+  const interactables = sceneContext.visibleInteractables.length
+    ? sceneContext.visibleInteractables
+      .map((entry) => {
+        const consequences = [];
+        if (entry.requiredMode) {
+          consequences.push(`scripted mode: ${entry.requiredMode}`);
+        }
+        if (entry.unlocks.length) {
+          consequences.push(`reveals ${entry.unlocks.join(", ")}`);
+        }
+        if (entry.progressDelta) {
+          consequences.push(`progress delta ${entry.progressDelta}`);
+        }
+        if (!consequences.length) {
+          consequences.push("no explicit scripted unlock");
+        }
+        return `- ${entry.label} [${entry.kind}] at (${entry.position.x},${entry.position.y}); modes: ${entry.interactionModes.join(", ") || "none"}; ${consequences.join("; ")}.`;
+      })
+      .join("\n")
+    : "- none";
+
+  const transitions = sceneContext.transitions.length
+    ? sceneContext.transitions
+      .map((entry) => `- ${entry.label} at (${entry.x},${entry.y}) is ${entry.isActive ? "open" : "locked"}${entry.blockerReason ? `; blocker: ${entry.blockerReason}` : ""}.`)
+      .join("\n")
+    : "- none";
+
+  const party = sceneContext.party.length
+    ? sceneContext.party
+      .map((entry) => {
+        const location = [`(${entry.position.x},${entry.position.y})`];
+        if (entry.landmark) {
+          location.push(`near ${entry.landmark}`);
+        }
+        if (entry.onTransitionAnchor) {
+          location.push(`standing on ${entry.transitionAnchorLabel}`);
+        }
+        return `- ${entry.displayName}: ${location.join(", ")}.`;
+      })
+      .join("\n")
+    : "- none";
+
+  const facts = sceneContext.recentFacts.length
+    ? sceneContext.recentFacts.map((entry) => `- ${entry.summary}`).join("\n")
+    : "- none";
+
+  return [
+    `Scene order: ${sceneContext.scene.order}.`,
+    `Scene title: ${sceneContext.scene.title}.`,
+    `Scene type: ${sceneContext.scene.type}.`,
+    `Scene purpose: ${sceneContext.scene.purpose}.`,
+    `Act state: ${sceneContext.scene.actState}.`,
+    `Scene summary: ${sceneContext.scene.summary}.`,
+    `Scene objective: ${sceneContext.scene.objective}.`,
+    `Pressure: ${sceneContext.scene.pressure} (${sceneContext.scene.pressureTier}).`,
+    `Map footprint: ${sceneContext.map.width} by ${sceneContext.map.height}.`,
+    `Terrain summary: ${sceneContext.map.terrainSummary.join(", ") || "none listed"}.`,
+    `Named landmarks: ${sceneContext.map.landmarks.map((entry) => entry.name).join("; ") || "none listed"}.`,
+    `Changed tiles: ${sceneContext.map.changedTiles.join(", ") || "none"}.`,
+    `Scene gates: discovery ${sceneContext.gates.discovery}; commitment ${sceneContext.gates.commitment}; exit ${sceneContext.gates.transition}; stall ${sceneContext.gates.stallCounter}; hints ${sceneContext.gates.hintBudget}.`,
+    sceneContext.viewer
+      ? `Current viewer: ${sceneContext.viewer.displayName} at (${sceneContext.viewer.position.x},${sceneContext.viewer.position.y})${sceneContext.viewer.landmark ? ` near ${sceneContext.viewer.landmark}` : ""}.`
+      : "Current viewer: unknown.",
+    "Party positions:",
+    party,
+    "Visible interactables and scripted consequences:",
+    interactables,
+    "Transition anchors:",
+    transitions,
+    "Recent established scene facts:",
+    facts,
+    "Scene authority rules:",
+    "- Exits only exist at the listed transition anchors.",
+    "- Do not describe a new room, map, or downstream scene until an anchor is open and the state has actually advanced.",
+    "- Do not invent extra interactables, props, clues, hazards, or NPCs beyond the listed landmarks, interactables, transcript, and facts.",
+    "- When an interactable has no scripted unlock, treat it as flavor, clarification, or minor observation rather than a world-state rewrite.",
+  ].join("\n");
+}
+
 export function buildSystemPrompt({ runtime, combat, promptMode, playerName, retrieval }) {
-  const mapSummary = describeSceneMapLayout(runtime.activeScene);
-  const interactableSummary = (runtime.activeScene.interactables || [])
-    .filter((entry) => !entry.hidden)
-    .map((entry) => `${entry.label} [${entry.kind}]`)
-    .join("; ");
   const recentMessages = runtime.messages
     .slice(-8)
     .map((message) => `${message.speakerLabel}: ${message.content}`)
@@ -101,23 +179,14 @@ export function buildSystemPrompt({ runtime, combat, promptMode, playerName, ret
     "Keep replies to 2-4 short sentences.",
     "Do not monologue. Prefer one crisp description and one grounded response.",
     "Never mention the engine, system updates, internal processing, or waiting for the game to update.",
-    "Never invent objects, NPCs, hazards, symbols, elders, totems, notes, or landmarks that are not present in the current scene summary, map features, interactables, or recent transcript.",
+    "Never invent objects, NPCs, hazards, symbols, exits, clues, or landmarks beyond the authoritative scene context below.",
     "If the player asks about something not currently visible on the board or in the scene state, say it is not presently visible instead of inventing it.",
     buildModeInstructions(promptMode, combat),
     `Current run: ${runtime.run.title}.`,
-    `Active scene: ${runtime.activeScene.title}.`,
-    `Scene type: ${runtime.activeScene.type}.`,
-    `Scene purpose: ${runtime.activeScene.scenePurpose || "unknown"}.`,
-    `Scene summary: ${runtime.activeScene.summary}.`,
-    `Scene objective: ${runtime.activeScene.objectiveText || runtime.activeScene.objective}.`,
-    `Pressure: ${runtime.activeScene.pressure}.`,
-    `Map footprint: ${mapSummary.width} by ${mapSummary.height}.`,
-    `Visible map features: ${mapSummary.features.join(", ") || "none listed"}.`,
-    `Named landmarks: ${mapSummary.landmarks.map((entry) => entry.name).join("; ") || "none listed"}.`,
-    `Visible interactables: ${interactableSummary || "none listed"}.`,
     `Prompt mode: ${promptMode}.`,
     `Player name: ${playerName}.`,
     `Combat snapshot: ${summarizeCombat(combat)}`,
+    `Authoritative scene context:\n${buildSceneContextBlock(runtime.sceneContext)}`,
     `Local canon retrieved for this prompt:\n${buildRetrievedContext(retrieval)}`,
     recentMessages ? `Recent transcript:\n${recentMessages}` : "Recent transcript: none.",
   ].join("\n");

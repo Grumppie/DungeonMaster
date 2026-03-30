@@ -9,7 +9,6 @@ import { RuntimeHistoryModals } from "./RuntimeHistoryModals";
 import { RuntimeCommandDeck } from "./RuntimeCommandDeck";
 import { RuntimePlayfield } from "./RuntimePlayfield";
 import { RuntimeRulesPanel } from "./RuntimeRulesPanel";
-import { buildSuggestedPrompt } from "./runtimeEvents";
 import { useRuntimeController } from "./useRuntimeController";
 
 export function RuntimeShell({
@@ -47,6 +46,7 @@ export function RuntimeShell({
   const {
     activeScene,
     latestDmMessage,
+    recentDmMessages,
     dmHistoryItems,
     partyHistory,
     sceneFacts,
@@ -54,18 +54,6 @@ export function RuntimeShell({
     speakerName,
   } = useRuntimeController({ session, adventure, sceneRuntime });
   const dmStatus = session?.dmStatus || "idle";
-
-  function handlePromptModeClick(nextMode) {
-    setPromptMode(nextMode);
-    setPromptDraft(buildSuggestedPrompt({ selectedCell, nextMode }));
-    window.requestAnimationFrame(() => {
-      promptInputRef.current?.focus();
-      promptInputRef.current?.setSelectionRange?.(
-        promptInputRef.current.value.length,
-        promptInputRef.current.value.length,
-      );
-    });
-  }
 
   async function handlePromptSubmit(event) {
     event.preventDefault();
@@ -138,14 +126,12 @@ export function RuntimeShell({
         selectedCombatTarget={selectedCombatTarget}
         onSelectTarget={onSelectTarget}
         speakerName={speakerName}
-        promptRail={sceneRuntime?.promptRail || []}
-        promptMode={promptMode}
         promptDraft={promptDraft}
         promptInputRef={promptInputRef}
         busy={busy}
         dmStatus={dmStatus}
         latestDmMessage={latestDmMessage}
-        onPromptModeClick={handlePromptModeClick}
+        recentDmMessages={recentDmMessages}
         onPromptChange={setPromptDraft}
         onPromptSubmit={handlePromptSubmit}
         onOpenDmHistory={() => setShowDmHistory(true)}

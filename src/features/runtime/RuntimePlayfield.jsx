@@ -16,14 +16,12 @@ export function RuntimePlayfield({
   selectedCombatTarget,
   onSelectTarget,
   speakerName,
-  promptRail,
-  promptMode,
   promptDraft,
   promptInputRef,
   busy,
   dmStatus,
   latestDmMessage,
-  onPromptModeClick,
+  recentDmMessages,
   onPromptChange,
   onPromptSubmit,
   onOpenDmHistory,
@@ -51,14 +49,12 @@ export function RuntimePlayfield({
       <div className="runtime-sidecar">
         <DmCommandPanel
           currentParticipant={currentParticipant}
-          promptRail={promptRail}
-          promptMode={promptMode}
           promptDraft={promptDraft}
           promptInputRef={promptInputRef}
           busy={busy}
           dmStatus={dmStatus}
           latestDmMessage={latestDmMessage}
-          onPromptModeClick={onPromptModeClick}
+          recentDmMessages={recentDmMessages}
           onPromptChange={onPromptChange}
           onPromptSubmit={onPromptSubmit}
           onOpenDmHistory={onOpenDmHistory}

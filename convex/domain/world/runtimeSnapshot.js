@@ -1,13 +1,7 @@
 import { buildSceneMapInstance } from "./mapInstances";
+import { buildAuthoritativeSceneContext } from "./sceneContext";
 import { buildSceneProjection } from "./sceneState";
 import { normalizeVisibleMessages, normalizeVisibleSceneFacts, normalizeVoiceEvents } from "./runtimeVisibility";
-
-export const DEFAULT_PROMPT_RAIL = [
-  { key: "ask", label: "Ask For A Ruling" },
-  { key: "inspect", label: "Survey The Scene" },
-  { key: "speak", label: "Speak In Character" },
-  { key: "declare", label: "Declare Intent" },
-];
 
 export async function loadSceneRuntimeSnapshot(ctx, sessionId, participantId) {
   const session = await ctx.db.get(sessionId);
@@ -37,6 +31,7 @@ export async function loadSceneRuntimeSnapshot(ctx, sessionId, participantId) {
       sceneState: null,
       sceneProgress: null,
       mapInstance: null,
+      sceneContext: null,
       sceneFacts: [],
       npcStates: [],
       messages: [],
@@ -60,20 +55,37 @@ export async function loadSceneRuntimeSnapshot(ctx, sessionId, participantId) {
   const visibleMessages = normalizeVisibleMessages(messages, participantId);
   const visibleVoiceEvents = normalizeVoiceEvents(voiceEvents.reverse(), participantId);
   const visibleSceneFacts = normalizeVisibleSceneFacts(projection.sceneFacts || [], participantId);
+  const participants = await ctx.db
+    .query("sessionParticipants")
+    .withIndex("by_session", (q) => q.eq("sessionId", sessionId))
+    .collect();
   const { _id: _sceneStateId, _creationTime: _sceneStateCreatedAt, ...sceneStateFields } =
     projection.sceneState || {};
+  const activeSceneWithProjection = {
+    ...activeScene,
+    ...sceneStateFields,
+  };
+  const sceneContext = buildAuthoritativeSceneContext({
+    run,
+    activeScene: activeSceneWithProjection,
+    sceneState: projection.sceneState || null,
+    sceneProgress: projection.sceneProgress || null,
+    mapInstance,
+    sceneFacts: visibleSceneFacts,
+    messages: visibleMessages,
+    participants,
+    viewerParticipantId: participantId,
+  });
 
   return {
     session,
     run,
     scenes,
-    activeScene: {
-      ...activeScene,
-      ...sceneStateFields,
-    },
+    activeScene: activeSceneWithProjection,
     sceneState: projection.sceneState || null,
     sceneProgress: projection.sceneProgress || null,
     mapInstance,
+    sceneContext,
     sceneFacts: visibleSceneFacts,
     npcStates: projection.npcStates || [],
     messages: visibleMessages,

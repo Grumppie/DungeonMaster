@@ -8,6 +8,7 @@ import {
 import {
   selectDmHistory,
   selectLatestDmMessage,
+  selectRecentDmMessages,
   selectSpeakerName,
   selectTranscriptAudioHistory,
 } from "../transcript/transcriptSelectors";
@@ -19,6 +20,10 @@ export function useRuntimeController({ session, adventure, sceneRuntime }) {
   );
   const latestDmMessage = useMemo(
     () => selectLatestDmMessage(sceneRuntime),
+    [sceneRuntime],
+  );
+  const recentDmMessages = useMemo(
+    () => selectRecentDmMessages(sceneRuntime),
     [sceneRuntime],
   );
   const dmHistoryItems = useMemo(
@@ -45,6 +50,7 @@ export function useRuntimeController({ session, adventure, sceneRuntime }) {
   return {
     activeScene,
     latestDmMessage,
+    recentDmMessages,
     dmHistoryItems,
     partyHistory,
     sceneFacts,
