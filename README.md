@@ -1,130 +1,132 @@
-# DND Agent
+# DungeonMaster
 
-Closed-beta D&D 5e session runner built with React, Convex, Clerk, Deepgram, and Gemini-based corpus search.
+Prompt-driven multiplayer D&D runtime built with React, Convex, Clerk, and a browser-first play loop.
 
-## What It Does
+This repo is not trying to be a generic fantasy generator anymore. The host can now seed the run with an explicit world prompt, and the opener is shaped around that brief:
 
-- Host or join a session through a shared link
-- Pick one of four fixed level-3 archetypes
-- Start an adaptive quest that scales to party size
-- Run authoritative combat in Convex
-- Search indexed rulebook and project corpora with vector retrieval
+- dark cathedral hunt
+- pirate harbor raid
+- jungle ruin expedition
+- infernal fortress breach
+- skybridge skirmish
 
-## Tech Stack
+If the world brief reads combat-heavy, the first level can open in combat. If it reads like mystery, exploration, or intrigue, the first level opens with visible leads, NPC pressure, and interactables instead of an empty room.
+
+## Current Shape
+
+- Multiplayer room flow with private or public sessions
+- Four fixed archetypes for fast party setup
+- Authoritative Convex combat with preview/confirm flow
+- Prompt-driven world seeding from the host's world brief
+- DM scene replies constrained by live map, scene, transition, and door state
+- Playwright E2E harness for the two-user host/join/start flow
+
+## Stack
 
 - Frontend: React + Vite
 - Backend: Convex
 - Auth: Clerk
 - Voice: Deepgram
-- Embeddings: Google Gemini
+- LLM orchestration: LangGraph + OpenAI-compatible responses
 
-## Environment
+## Local Setup
 
-Add the required values to `.env` or `.env.local`:
+Create `.env.local` or `.env` with:
 
 - `VITE_CONVEX_URL`
 - `VITE_CLERK_PUBLISHABLE_KEY`
 - `CLERK_JWT_ISSUER_DOMAIN`
+- `OPENAI_API_KEY`
 - `DEEPGRAM_API_KEY`
 - `GEMINI_API_KEY`
 
-## Run Locally
+Install and run:
 
 ```bash
 npm install
 npm run dev
 ```
 
-`npm run dev` starts both the Convex dev server and the Vite client.
+`npm run dev` starts both Convex and the Vite client.
 
-## Test The Game
+## Creating A Better Run
 
-1. Sign in with Clerk in the browser.
-2. Create a hosted session from one tab.
-3. Copy the join link or join code.
-4. Open a second browser window or incognito session and join the same session.
-5. Pick archetypes for both players.
-6. Start the adventure as the host.
-7. When combat starts, use the combat panel to:
-   - select a target
-   - attack
-   - cast a spell
-   - move
-   - end turn
-8. Watch the encounter log and combatant HP update in realtime.
+From the room creation screen, provide:
 
-## Corpus Ingestion
+- `Character name`
+- `Session title`
+- `World prompt`
 
-If you add lawful source files under `data/`, reindex them with:
+Example world prompts:
 
-```bash
-npm run corpus:ingest
-```
+- `A brutal pirate city under blood-red tides, with boarding fights, drowned vaults, and cursed harpoon gangs.`
+- `A gothic abbey full of grave choirs, false saints, and candlelit crypt ambushes.`
+- `A serpent jungle ruin with dinosaur hunts, collapsing rope bridges, and venom cultists.`
+- `A sky-fortress war where chain bridges, boarding hooks, and storm cannons matter.`
 
-## Production Check
+The world prompt is persisted on the session and used by both the graph path and the deterministic fallback builder.
+
+## Testing
+
+Build the app:
 
 ```bash
 npm run build
 ```
 
-## Browser Feedback Loop
+Refresh Convex bindings after schema or function changes:
 
-Research and setup guidance for Codex + Playwright MCP + browser-based bug fixing lives in `docs/browser-feedback-loop.md`.
+```bash
+npx convex codegen
+```
 
-## Playwright E2E
+### Playwright E2E
 
-Install Playwright browsers once:
+Install Chromium once:
 
 ```bash
 npx playwright install chromium
 ```
 
-Start the app locally in a separate terminal:
+Start the local app in another terminal:
 
 ```bash
 npm run dev
 ```
 
-Bootstrap saved auth state for the host user:
+Bootstrap auth for the host:
 
 ```bash
 npm run test:e2e:bootstrap:host
 ```
 
-Or run it with credentials in the shell for automatic Clerk sign-in:
-
-```powershell
-$env:PLAYWRIGHT_E2E_HOST_USERNAME="host-username"
-$env:PLAYWRIGHT_E2E_HOST_PASSWORD="host-password"
-npm run test:e2e:bootstrap:host
-```
-
-Bootstrap saved auth state for the guest user:
+Bootstrap auth for the guest:
 
 ```bash
 npm run test:e2e:bootstrap:guest
 ```
 
-Automatic guest sign-in uses:
-
-```powershell
-$env:PLAYWRIGHT_E2E_GUEST_USERNAME="guest-username"
-$env:PLAYWRIGHT_E2E_GUEST_PASSWORD="guest-password"
-npm run test:e2e:bootstrap:guest
-```
-
-Run the two-user room flow:
+Run the two-user room-flow spec:
 
 ```bash
 npm run test:e2e
 ```
 
+Automatic Clerk bootstrap also works with shell env vars:
+
+```powershell
+$env:PLAYWRIGHT_E2E_HOST_USERNAME="host-username"
+$env:PLAYWRIGHT_E2E_HOST_PASSWORD="host-password"
+$env:PLAYWRIGHT_E2E_GUEST_USERNAME="guest-username"
+$env:PLAYWRIGHT_E2E_GUEST_PASSWORD="guest-password"
+```
+
+## Browser Feedback Loop
+
+Research and setup notes for the Codex + Playwright MCP workflow live in `docs/browser-feedback-loop.md`.
+
 ## Notes
 
-- Combat resolution is authoritative in Convex.
-- The beta starts with four curated archetypes:
-  - Human Fighter
-  - Dwarf Cleric
-  - Elf Rogue
-  - Tiefling Sorcerer
-- The current engine supports turn order, attacks, spells, movement, downed states, and death saves.
+- Combat legality is authoritative in the combat engine and now has deterministic guardrails in the scene-prompt lane for off-sheet ability requests.
+- Doorway narration is bound to actual door and transition state; the DM should not narrate a new corridor or room before the map state changes.
+- Scene transitions are still anchor-driven. Scene change, map change, and level flow are tied to transition unlock + actual advancement rather than DM prose alone.

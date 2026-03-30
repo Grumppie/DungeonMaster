@@ -54,6 +54,11 @@ export function LobbyScreen({
                 <CardDescription className="text-sm leading-6">
                   Finalize archetypes, check party readiness, then let the host launch the generated run.
                 </CardDescription>
+                {session.worldPrompt ? (
+                  <p className="rounded-2xl bg-muted/25 px-4 py-3 text-sm leading-6 text-muted-foreground">
+                    <strong className="text-foreground">World brief:</strong> {session.worldPrompt}
+                  </p>
+                ) : null}
               </div>
               <div className="flex flex-wrap gap-2">
                 <Badge variant="outline" className="rounded-full px-3 py-1">{session.roomPrivacy}</Badge>
@@ -88,7 +93,7 @@ export function LobbyScreen({
                 disabled={!everyoneReady || busy === "start"}
                 data-testid="start-run-button"
               >
-                {busy === "start" ? "Building run..." : "Start DM-generated run"}
+                {busy === "start" ? "Building world..." : "Start prompt-driven run"}
               </Button>
             ) : (
               <div className="flex items-center gap-2 rounded-2xl border border-border/60 bg-background/70 px-4 py-3 text-sm text-muted-foreground">

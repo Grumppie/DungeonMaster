@@ -40,6 +40,7 @@ export function useSessionRuntime() {
   const [activePage, setActivePage] = useSessionPageState();
   const [createCharacterName, setCreateCharacterName] = useState("");
   const [sessionTitle, setSessionTitle] = useState("The Broken Cartographer");
+  const [worldPrompt, setWorldPrompt] = useState("");
   const [roomPrivacy, setRoomPrivacy] = useState("private");
   const [joinCharacterName, setJoinCharacterName] = useState("");
   const [joinCodeInput, setJoinCodeInput] = useState(joinCode);
@@ -114,6 +115,7 @@ export function useSessionRuntime() {
     sessionTitle,
     createCharacterName,
     roomPrivacy,
+    worldPrompt,
     joinCharacterName,
     joinCodeInput,
     searchQuery,
@@ -174,6 +176,7 @@ export function useSessionRuntime() {
       activePage,
       createCharacterName,
       sessionTitle,
+      worldPrompt,
       roomPrivacy,
       joinCharacterName,
       joinCodeInput,
@@ -188,6 +191,7 @@ export function useSessionRuntime() {
       setActivePage,
       setCreateCharacterName,
       setSessionTitle,
+      setWorldPrompt,
       setRoomPrivacy,
       setJoinCharacterName,
       setJoinCodeInput,

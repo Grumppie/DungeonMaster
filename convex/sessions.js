@@ -70,6 +70,7 @@ const adventureBlueprintValidator = v.object({
 export const create = mutation({
   args: {
     title: v.string(),
+    worldPrompt: v.optional(v.string()),
     displayName: v.string(),
     characterName: v.optional(v.string()),
     isAnonymous: v.optional(v.boolean()),

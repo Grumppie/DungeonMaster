@@ -119,6 +119,7 @@ export default defineSchema({
     hostUserId: v.optional(v.id("appUsers")),
     currentRunId: v.optional(v.id("adventureRuns")),
     title: v.string(),
+    worldPrompt: v.optional(v.string()),
     roomPrivacy: roomPrivacyValidator,
     allowOpenJoin: v.boolean(),
     turnTimerSeconds: v.number(),

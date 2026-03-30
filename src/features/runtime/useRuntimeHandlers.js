@@ -14,6 +14,7 @@ export function useRuntimeHandlers({
   shareSceneMessage,
   respondToScenePrompt,
   sessionTitle,
+  worldPrompt,
   createCharacterName,
   roomPrivacy,
   joinCharacterName,
@@ -42,6 +43,7 @@ export function useRuntimeHandlers({
     try {
       const result = await createSession({
         title: sessionTitle,
+        worldPrompt,
         displayName: createCharacterName || "Host",
         characterName: createCharacterName || "Host",
         roomPrivacy,

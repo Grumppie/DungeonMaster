@@ -4,6 +4,7 @@ import { Annotation, END, START, StateGraph } from "@langchain/langgraph";
 import { ChatOpenAI } from "@langchain/openai";
 import { z } from "zod";
 
+import { applyWorldSeedToBlueprint } from "../domain/world/promptDrivenBlueprint";
 import { enrichNpcVoiceProfiles } from "./voiceProfiles";
 
 const sceneNpcSchema = z.object({
@@ -70,6 +71,7 @@ const actionIntentSchema = z.object({
 
 const AdventureGraphState = Annotation.Root({
   sessionTitle: Annotation(),
+  worldPrompt: Annotation(),
   partySize: Annotation(),
   storyFrame: Annotation(),
   scenes: Annotation(),
@@ -144,7 +146,7 @@ function normalizeScene(scene) {
   };
 }
 
-function buildFallbackBlueprint(sessionTitle, partySize) {
+function buildFallbackBlueprint(sessionTitle, partySize, worldPrompt) {
   const title = sessionTitle?.trim() || "Frontier Rush";
   const scenes = [
       {
@@ -251,7 +253,7 @@ function buildFallbackBlueprint(sessionTitle, partySize) {
         investigationRules: [],
       },
     ];
-  return {
+  return applyWorldSeedToBlueprint({
     title,
     questHook: "A rival band is already moving on a powerful frontier relic and the party has one shot to seize tempo first.",
     objective: "Push through the route, take the prize, and survive the rival retaliation.",
@@ -260,13 +262,17 @@ function buildFallbackBlueprint(sessionTitle, partySize) {
         ? "A fast raid run with two tactical spikes and a consequence-heavy finish."
         : "A compact raid with one tactical spike, one pressure room, and a hard closing choice.",
     scenes,
-  };
+  }, {
+    sessionTitle,
+    partySize,
+    worldPrompt,
+  });
 }
 
 async function generateStoryFrame(state) {
   if (!process.env.OPENAI_API_KEY) {
     return {
-      storyFrame: buildFallbackBlueprint(state.sessionTitle, state.partySize),
+      storyFrame: buildFallbackBlueprint(state.sessionTitle, state.partySize, state.worldPrompt),
     };
   }
 
@@ -274,11 +280,11 @@ async function generateStoryFrame(state) {
   const storyFrame = await model.invoke([
     [
       "system",
-      "Design a mobile-first, Clash-Royale-style D&D raid premise. Make it visual, urgent, map-friendly, and suitable for 1 short session with 4-5 scenes.",
+      "Design a mobile-first, tactical D&D raid premise. Make it visual, specific, and shaped by the player's requested world. The world prompt must materially change the aesthetic, enemy pressure, and first scene.",
     ],
     [
       "user",
-      `Session title seed: ${state.sessionTitle}. Party size: ${state.partySize}. Output only the raid frame.`,
+      `Session title seed: ${state.sessionTitle}. World prompt: ${state.worldPrompt || "none supplied"}. Party size: ${state.partySize}. Output only the raid frame.`,
     ],
   ]);
 
@@ -297,12 +303,13 @@ async function generateSceneStack(state) {
   const result = await model.invoke([
     [
       "system",
-      "Create a 4-5 scene raid run for a tactical multiplayer D&D game. Use scene types intro, exploration, combat, and resolution only. At least one combat scene is required, two for parties of 3 or more.",
+      "Create a 4-5 scene raid run for a tactical multiplayer D&D game. Use scene types intro, exploration, combat, and resolution only. At least one combat scene is required, two for parties of 3 or more. If the player's world prompt sounds combat-heavy, open with combat. Otherwise make scene one immediately playable with visible clues, witnesses, or scene objects instead of empty atmosphere.",
     ],
     [
       "user",
       JSON.stringify({
         sessionTitle: state.sessionTitle,
+        worldPrompt: state.worldPrompt,
         partySize: state.partySize,
         storyFrame: state.storyFrame,
       }),
@@ -367,10 +374,11 @@ export async function generateAdventureBlueprintGraph(input) {
 
   const result = await graph.invoke({
     sessionTitle: input.sessionTitle,
+    worldPrompt: input.worldPrompt,
     partySize: input.partySize,
   });
 
-  return result.blueprint || buildFallbackBlueprint(input.sessionTitle, input.partySize);
+  return result.blueprint || buildFallbackBlueprint(input.sessionTitle, input.partySize, input.worldPrompt);
 }
 
 export async function previewPlayerIntentWithGraph({ utterance, actorSheet }) {

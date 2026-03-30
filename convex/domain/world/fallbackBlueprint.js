@@ -1,3 +1,5 @@
+import { applyWorldSeedToBlueprint } from "./promptDrivenBlueprint";
+
 function hashSeed(input) {
   return [...input].reduce((total, character, index) => {
     return total + character.charCodeAt(0) * (index + 17);
@@ -8,7 +10,7 @@ function pickBySeed(options, seed, offset = 0) {
   return options[(seed + offset) % options.length];
 }
 
-export function buildFallbackAdventureBlueprint(sessionTitle, partySize) {
+export function buildFallbackAdventureBlueprint(sessionTitle, partySize, options = {}) {
   const title = sessionTitle?.trim() || "Arena Quest";
   const seed = hashSeed(`${title}:${partySize}`);
   const fronts = [
@@ -272,7 +274,7 @@ export function buildFallbackAdventureBlueprint(sessionTitle, partySize) {
         : [],
   }));
 
-  return {
+  const blueprint = {
     title,
     questHook:
       `${front.patron} hires the party to seize ${front.macguffin} before ${front.rival} locks down the route first.`,
@@ -283,4 +285,10 @@ export function buildFallbackAdventureBlueprint(sessionTitle, partySize) {
         : "A compact raid run with one major battle spike, scene-driven DM play, and a consequence-heavy ending.",
     scenes,
   };
+
+  return applyWorldSeedToBlueprint(blueprint, {
+    sessionTitle,
+    partySize,
+    worldPrompt: options.worldPrompt,
+  });
 }

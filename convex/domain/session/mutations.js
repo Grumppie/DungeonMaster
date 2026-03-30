@@ -34,6 +34,7 @@ export async function createSession(ctx, args) {
     hostUserId: user._id,
     currentRunId: undefined,
     title: args.title.trim() || "Untitled quest",
+    worldPrompt: args.worldPrompt?.trim() || undefined,
     roomPrivacy: args.roomPrivacy || "private",
     allowOpenJoin: (args.roomPrivacy || "private") === "public",
     turnTimerSeconds: args.turnTimerSeconds || 20,
@@ -316,7 +317,9 @@ export async function startAdventureWithFallbackBlueprint(ctx, args) {
     .withIndex("by_session", (q) => q.eq("sessionId", args.sessionId))
     .collect();
   const activeParticipants = ensureAdventureCanStart(session, participants);
-  const blueprint = buildFallbackAdventureBlueprint(session.title, activeParticipants.length);
+  const blueprint = buildFallbackAdventureBlueprint(session.title, activeParticipants.length, {
+    worldPrompt: session.worldPrompt,
+  });
 
   return persistAdventureRunFromBlueprint(ctx, {
     session,

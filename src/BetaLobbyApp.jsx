@@ -124,6 +124,7 @@ export default function BetaLobbyApp() {
               busy={state.busy}
               createCharacterName={state.createCharacterName}
               sessionTitle={state.sessionTitle}
+              worldPrompt={state.worldPrompt}
               roomPrivacy={state.roomPrivacy}
               joinCharacterName={state.joinCharacterName}
               joinCodeInput={state.joinCodeInput}
@@ -131,6 +132,7 @@ export default function BetaLobbyApp() {
               sessionPreview={session}
               onCreateCharacterNameChange={actions.setCreateCharacterName}
               onSessionTitleChange={actions.setSessionTitle}
+              onWorldPromptChange={actions.setWorldPrompt}
               onRoomPrivacyChange={actions.setRoomPrivacy}
               onJoinCharacterNameChange={actions.setJoinCharacterName}
               onJoinCodeInputChange={actions.setJoinCodeInput}

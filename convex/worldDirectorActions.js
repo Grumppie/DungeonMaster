@@ -43,6 +43,7 @@ export const startAdventureFromGraph = action({
         runCreateRunGraph({
           sessionTitle: bootstrap.session.title,
           partySize: activeParticipants.length,
+          worldPrompt: bootstrap.session.worldPrompt,
         }),
         START_ADVENTURE_GRAPH_TIMEOUT_MS,
         "Adventure graph generation",
@@ -52,7 +53,9 @@ export const startAdventureFromGraph = action({
         sessionId: String(args.sessionId),
         error: String(error),
       });
-      blueprint = buildFallbackAdventureBlueprint(bootstrap.session.title, activeParticipants.length);
+      blueprint = buildFallbackAdventureBlueprint(bootstrap.session.title, activeParticipants.length, {
+        worldPrompt: bootstrap.session.worldPrompt,
+      });
     }
 
     return ctx.runMutation(internal.sessions.startAdventureWithBlueprint, {

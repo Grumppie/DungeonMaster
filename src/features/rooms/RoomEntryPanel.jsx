@@ -11,12 +11,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export function RoomEntryPanel({
   busy,
   createCharacterName,
   sessionTitle,
+  worldPrompt,
   roomPrivacy,
   joinCharacterName,
   joinCodeInput,
@@ -24,6 +26,7 @@ export function RoomEntryPanel({
   sessionPreview,
   onCreateCharacterNameChange,
   onSessionTitleChange,
+  onWorldPromptChange,
   onRoomPrivacyChange,
   onJoinCharacterNameChange,
   onJoinCodeInputChange,
@@ -88,6 +91,19 @@ export function RoomEntryPanel({
                 className="h-12 rounded-2xl bg-background/70"
                 data-testid="session-title-input"
               />
+            </div>
+            <div className="grid gap-2">
+              <label className="text-sm font-medium text-foreground">World prompt</label>
+              <Textarea
+                value={worldPrompt}
+                onChange={(event) => onWorldPromptChange(event.target.value)}
+                placeholder="A brutal pirate city under blood-red tides, with knife fights on storm-wharves and drowned vaults below the harbor."
+                className="min-h-28 rounded-2xl bg-background/70"
+                data-testid="world-prompt-input"
+              />
+              <p className="text-xs leading-5 text-muted-foreground">
+                Describe the world you actually want to play. We use this to shape the setting, first scene, and whether the run opens with pressure, clues, or immediate combat.
+              </p>
             </div>
             <Button
               type="button"
