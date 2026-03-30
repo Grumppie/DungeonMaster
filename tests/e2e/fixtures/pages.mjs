@@ -30,7 +30,18 @@ export function archetypeButton(page, archetypeKey) {
   return page.getByTestId(`pick-archetype-${archetypeKey}`);
 }
 
-export async function waitForSignedInRoomEntry(page) {
-  await expect(page.getByTestId(testIds.createCharacterNameInput)).toBeVisible();
-  await expect(page.getByTestId(testIds.createRoomButton)).toBeVisible();
+export async function waitForSignedInRoomEntry(page, { timeout = 300000 } = {}) {
+  await expect
+    .poll(
+      async () => {
+        const createNameVisible = await page.getByTestId(testIds.createCharacterNameInput).isVisible().catch(() => false);
+        const createButtonVisible = await page.getByTestId(testIds.createRoomButton).isVisible().catch(() => false);
+        return createNameVisible && createButtonVisible;
+      },
+      {
+        timeout,
+        message: "Timed out waiting for Clerk sign-in to return to the signed-in room entry view.",
+      },
+    )
+    .toBe(true);
 }
