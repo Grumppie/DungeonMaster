@@ -61,8 +61,8 @@ test("host creates room, guest joins, both ready, host starts run", async ({ bro
     await waitForParticipant(guestPage, guestName);
     await waitForParticipant(hostPage, guestName);
 
-    await archetypeButton(hostPage, "fighter").click();
-    await archetypeButton(guestPage, "cleric").click();
+    await archetypeButton(hostPage, "human-fighter").click();
+    await archetypeButton(guestPage, "dwarf-cleric").click();
 
     await expectParticipantReady(hostPage, hostName);
     await expectParticipantReady(hostPage, guestName);

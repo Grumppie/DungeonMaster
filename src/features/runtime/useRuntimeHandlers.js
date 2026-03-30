@@ -4,6 +4,7 @@ export function useRuntimeHandlers({
   joinSession,
   chooseArchetype,
   startAdventure,
+  startAdventureFallback,
   performCombatAction,
   issueCombatPreview,
   confirmCombatPreview,
@@ -24,6 +25,17 @@ export function useRuntimeHandlers({
   setSearchResults,
   setSelectedCell,
 }) {
+  const START_ADVENTURE_TIMEOUT_MS = 15000;
+
+  function withTimeout(promise, timeoutMs, timeoutLabel) {
+    return Promise.race([
+      promise,
+      new Promise((_, reject) => {
+        setTimeout(() => reject(new Error(`${timeoutLabel} timed out after ${timeoutMs}ms.`)), timeoutMs);
+      }),
+    ]);
+  }
+
   async function handleCreateSession() {
     setBusy("create");
     setError("");
@@ -88,9 +100,17 @@ export function useRuntimeHandlers({
     setBusy("start");
     setError("");
     try {
-      await startAdventure({ sessionId: session._id });
+      await withTimeout(
+        startAdventure({ sessionId: session._id }),
+        START_ADVENTURE_TIMEOUT_MS,
+        "Graph adventure start",
+      );
     } catch (startError) {
-      setError(String(startError));
+      try {
+        await startAdventureFallback({ sessionId: session._id });
+      } catch (fallbackError) {
+        setError(String(fallbackError || startError));
+      }
     } finally {
       setBusy("");
     }

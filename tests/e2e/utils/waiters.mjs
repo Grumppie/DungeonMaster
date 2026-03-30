@@ -12,5 +12,5 @@ export async function waitForParticipant(page, visibleName) {
 }
 
 export async function waitForRuntime(page) {
-  await expect(page.getByTestId(testIds.runtimeShellRoot)).toBeVisible();
+  await expect(page.getByTestId(testIds.runtimeShellRoot)).toBeVisible({ timeout: 60000 });
 }

@@ -91,9 +91,25 @@ Bootstrap saved auth state for the host user:
 npm run test:e2e:bootstrap:host
 ```
 
+Or run it with credentials in the shell for automatic Clerk sign-in:
+
+```powershell
+$env:PLAYWRIGHT_E2E_HOST_USERNAME="host-username"
+$env:PLAYWRIGHT_E2E_HOST_PASSWORD="host-password"
+npm run test:e2e:bootstrap:host
+```
+
 Bootstrap saved auth state for the guest user:
 
 ```bash
+npm run test:e2e:bootstrap:guest
+```
+
+Automatic guest sign-in uses:
+
+```powershell
+$env:PLAYWRIGHT_E2E_GUEST_USERNAME="guest-username"
+$env:PLAYWRIGHT_E2E_GUEST_PASSWORD="guest-password"
 npm run test:e2e:bootstrap:guest
 ```
 

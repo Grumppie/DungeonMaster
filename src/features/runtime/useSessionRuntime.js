@@ -18,6 +18,7 @@ export function useSessionRuntime() {
   const createSession = useMutation(api.sessions.create);
   const joinSession = useMutation(api.sessions.join);
   const chooseArchetype = useMutation(api.sessions.chooseArchetype);
+  const startAdventureFallback = useMutation(api.sessions.startAdventure);
   const performCombatAction = useMutation(api.combat.performAction);
   const issueCombatPreview = useMutation(api.combat.issuePreview);
   const confirmCombatPreview = useMutation(api.combat.confirmPreview);
@@ -101,6 +102,7 @@ export function useSessionRuntime() {
     joinSession,
     chooseArchetype,
     startAdventure,
+    startAdventureFallback,
     performCombatAction,
     issueCombatPreview,
     confirmCombatPreview,
