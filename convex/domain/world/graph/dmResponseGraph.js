@@ -80,6 +80,143 @@ function buildRetrievedContext(retrieval) {
     .join("\n");
 }
 
+function parseCoordinateSourceId(sourceId) {
+  const match = String(sourceId || "").match(/^(-?\d+):(-?\d+)$/);
+  if (!match) {
+    return null;
+  }
+
+  return {
+    x: Number(match[1]),
+    y: Number(match[2]),
+  };
+}
+
+function getCompassDirection(fromX, fromY, toX, toY) {
+  const horizontal = toX > fromX ? "east" : toX < fromX ? "west" : "";
+  const vertical = toY > fromY ? "south" : toY < fromY ? "north" : "";
+
+  if (horizontal && vertical) {
+    return `${vertical}-${horizontal}`;
+  }
+
+  return horizontal || vertical || "here";
+}
+
+function buildPromptFocusBlock({ runtime, sourceKind, sourceId, sourceLabel }) {
+  const sceneContext = runtime.sceneContext;
+  if (!sceneContext) {
+    return "Prompt focus is unavailable.";
+  }
+
+  let focusPosition = null;
+  let focusLines = [];
+
+  if (sourceKind === "tile") {
+    focusPosition = parseCoordinateSourceId(sourceId);
+    if (focusPosition) {
+      const mapCell = runtime.mapInstance?.cells?.find(
+        (entry) => entry.x === focusPosition.x && entry.y === focusPosition.y,
+      );
+      focusLines.push(
+        `Focused tile: (${focusPosition.x},${focusPosition.y})${mapCell?.terrainKind ? ` terrain ${mapCell.terrainKind}` : ""}.`,
+      );
+    }
+  } else if (sourceKind === "interactable") {
+    const interactable = sceneContext.visibleInteractables.find((entry) => entry.id === sourceId);
+    if (interactable) {
+      focusPosition = interactable.position;
+      focusLines.push(
+        `Focused interactable: ${interactable.label} [${interactable.kind}] at (${interactable.position.x},${interactable.position.y}).`,
+      );
+    }
+  }
+
+  if (!focusPosition && sceneContext.viewer?.position) {
+    focusPosition = sceneContext.viewer.position;
+    focusLines.push(
+      `Fallback focus: viewer position (${focusPosition.x},${focusPosition.y}).`,
+    );
+  }
+
+  if (!focusPosition) {
+    return `Prompt source: ${sourceKind || "freeform"} ${sourceLabel || ""}`.trim();
+  }
+
+  const nearbyInteractables = sceneContext.visibleInteractables
+    .map((entry) => ({
+      ...entry,
+      distance:
+        Math.abs(entry.position.x - focusPosition.x) +
+        Math.abs(entry.position.y - focusPosition.y),
+      direction: getCompassDirection(
+        focusPosition.x,
+        focusPosition.y,
+        entry.position.x,
+        entry.position.y,
+      ),
+    }))
+    .sort((left, right) => left.distance - right.distance)
+    .slice(0, 4);
+
+  const nearbyLandmarks = sceneContext.map.landmarks
+    .map((entry) => {
+      const distances = (entry.cells || []).map(
+        ([x, y]) => Math.abs(x - focusPosition.x) + Math.abs(y - focusPosition.y),
+      );
+      const bestDistance = Math.min(...distances);
+      const bestCell = (entry.cells || []).find(
+        ([x, y]) => Math.abs(x - focusPosition.x) + Math.abs(y - focusPosition.y) === bestDistance,
+      );
+      return {
+        name: entry.name,
+        distance: bestDistance,
+        direction: bestCell
+          ? getCompassDirection(focusPosition.x, focusPosition.y, bestCell[0], bestCell[1])
+          : "unknown",
+      };
+    })
+    .sort((left, right) => left.distance - right.distance)
+    .slice(0, 4);
+
+  const nearbyTransitions = sceneContext.transitions
+    .map((entry) => ({
+      ...entry,
+      distance: Math.abs(entry.x - focusPosition.x) + Math.abs(entry.y - focusPosition.y),
+      direction: getCompassDirection(focusPosition.x, focusPosition.y, entry.x, entry.y),
+    }))
+    .sort((left, right) => left.distance - right.distance)
+    .slice(0, 2);
+
+  focusLines = [
+    ...focusLines,
+    `Nearest interactables: ${
+      nearbyInteractables.length
+        ? nearbyInteractables
+          .map((entry) => `${entry.label} at (${entry.position.x},${entry.position.y}), distance ${entry.distance}, ${entry.direction}`)
+          .join("; ")
+        : "none"
+    }.`,
+    `Nearest landmarks: ${
+      nearbyLandmarks.length
+        ? nearbyLandmarks
+          .map((entry) => `${entry.name}, distance ${entry.distance}, ${entry.direction}`)
+          .join("; ")
+        : "none"
+    }.`,
+    `Nearest exits: ${
+      nearbyTransitions.length
+        ? nearbyTransitions
+          .map((entry) => `${entry.label} at (${entry.x},${entry.y}), distance ${entry.distance}, ${entry.direction}, ${entry.isActive ? "open" : "locked"}`)
+          .join("; ")
+        : "none"
+    }.`,
+    "When the player inspects a tile or selected object, answer from this focus first and prefer the nearest matching landmark or interactable over farther ones.",
+  ];
+
+  return focusLines.join("\n");
+}
+
 function buildSceneContextBlock(sceneContext) {
   if (!sceneContext) {
     return "Scene context is unavailable. Stay conservative and only restate visible facts from recent transcript.";
@@ -164,7 +301,16 @@ function buildSceneContextBlock(sceneContext) {
   ].join("\n");
 }
 
-export function buildSystemPrompt({ runtime, combat, promptMode, playerName, retrieval }) {
+export function buildSystemPrompt({
+  runtime,
+  combat,
+  promptMode,
+  playerName,
+  retrieval,
+  sourceKind,
+  sourceId,
+  sourceLabel,
+}) {
   const recentMessages = runtime.messages
     .slice(-8)
     .map((message) => `${message.speakerLabel}: ${message.content}`)
@@ -186,6 +332,7 @@ export function buildSystemPrompt({ runtime, combat, promptMode, playerName, ret
     `Prompt mode: ${promptMode}.`,
     `Player name: ${playerName}.`,
     `Combat snapshot: ${summarizeCombat(combat)}`,
+    `Prompt focus:\n${buildPromptFocusBlock({ runtime, sourceKind, sourceId, sourceLabel })}`,
     `Authoritative scene context:\n${buildSceneContextBlock(runtime.sceneContext)}`,
     `Local canon retrieved for this prompt:\n${buildRetrievedContext(retrieval)}`,
     recentMessages ? `Recent transcript:\n${recentMessages}` : "Recent transcript: none.",
@@ -196,7 +343,17 @@ export function normalizeDmReply(reply) {
   return (reply || "").replace(/\r/g, "").replace(/\n{3,}/g, "\n\n").trim();
 }
 
-export async function generateDmReply({ runtime, combat, playerPrompt, promptMode, playerName, retrieval }) {
+export async function generateDmReply({
+  runtime,
+  combat,
+  playerPrompt,
+  promptMode,
+  playerName,
+  retrieval,
+  sourceKind,
+  sourceId,
+  sourceLabel,
+}) {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
     return buildConservativeRetrievalFallback({ runtime, playerName, combat, promptMode });
@@ -213,7 +370,16 @@ export async function generateDmReply({ runtime, combat, playerPrompt, promptMod
       input: [
         {
           role: "system",
-          content: buildSystemPrompt({ runtime, combat, promptMode, playerName, retrieval }),
+          content: buildSystemPrompt({
+            runtime,
+            combat,
+            promptMode,
+            playerName,
+            retrieval,
+            sourceKind,
+            sourceId,
+            sourceLabel,
+          }),
         },
         {
           role: "user",

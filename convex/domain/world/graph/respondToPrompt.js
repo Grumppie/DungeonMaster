@@ -80,6 +80,9 @@ async function streamDmReply({
   promptMode,
   playerName,
   retrieval,
+  sourceKind,
+  sourceId,
+  sourceLabel,
   draftMessageId,
   sessionId,
   visibility,
@@ -147,6 +150,9 @@ async function streamDmReply({
       promptMode,
       playerName,
       retrieval,
+      sourceKind,
+      sourceId,
+      sourceLabel,
     });
     const normalized = normalizeDmReply(fallback);
     await ctx.runMutation(internal.sceneRuntime.replaceSceneMessage, {
@@ -169,7 +175,16 @@ async function streamDmReply({
       input: [
         {
           role: "system",
-          content: buildSystemPrompt({ runtime, combat, promptMode, playerName, retrieval }),
+          content: buildSystemPrompt({
+            runtime,
+            combat,
+            promptMode,
+            playerName,
+            retrieval,
+            sourceKind,
+            sourceId,
+            sourceLabel,
+          }),
         },
         {
           role: "user",
@@ -193,6 +208,9 @@ async function streamDmReply({
       promptMode,
       playerName,
       retrieval,
+      sourceKind,
+      sourceId,
+      sourceLabel,
     });
     const normalized = normalizeDmReply(fallback);
     await ctx.runMutation(internal.sceneRuntime.replaceSceneMessage, {
@@ -321,6 +339,9 @@ export async function respondToPromptAction(ctx, { sessionId, playerMessageId, p
       promptMode,
       playerName: playerMessage.speakerLabel,
       retrieval,
+      sourceKind: playerMessage.sourceKind,
+      sourceId: playerMessage.sourceId,
+      sourceLabel: playerMessage.sourceLabel,
       draftMessageId,
       sessionId,
       visibility: playerMessage.visibility || "party",
