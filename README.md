@@ -67,6 +67,10 @@ npm run corpus:ingest
 npm run build
 ```
 
+## Browser Feedback Loop
+
+Research and setup guidance for Codex + Playwright MCP + browser-based bug fixing lives in `docs/browser-feedback-loop.md`.
+
 ## Notes
 
 - Combat resolution is authoritative in Convex.

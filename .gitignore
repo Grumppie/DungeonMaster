@@ -4,3 +4,7 @@ dist/
 data/memory-index-cache.json
 convex/_generated/
 .env.local
+playwright/.auth/
+playwright-report/
+test-results/
+.codex-playwright/
