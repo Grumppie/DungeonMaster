@@ -1,6 +1,7 @@
 import { api, internal } from "../../../_generated/api";
 import { buildRetrievalRequest } from "../../retrieval/searchPolicy";
 import { inferPromptMode } from "./interactionRouterGraph";
+import { evaluatePromptGuardrail } from "./promptGuardrails";
 import {
   buildSystemPrompt,
   generateDmReply,
@@ -308,10 +309,44 @@ export async function respondToPromptAction(ctx, { sessionId, playerMessageId, p
   });
 
   try {
+    const bootstrap = await ctx.runQuery(internal.sessions.getBootstrap, {
+      sessionId,
+    });
     const combat = await ctx.runQuery(api.combat.getForSession, {
       sessionId,
     });
+    const participant = bootstrap?.participants?.find(
+      (entry) => String(entry._id) === String(playerMessage.participantId),
+    ) || null;
     const promptMode = inferPromptMode(requestedPromptMode, playerMessage.content, combat);
+    const guardrail = evaluatePromptGuardrail({
+      participant,
+      combat,
+      utterance: playerMessage.content,
+    });
+
+    if (guardrail?.blocked) {
+      const reply = await ctx.runMutation(internal.sceneRuntime.persistDmReply, {
+        sessionId,
+        runId: runtime.run._id,
+        sceneId: runtime.activeScene._id,
+        content: guardrail.reply,
+        messageType: "reply",
+        visibility: playerMessage.visibility || "party",
+        targetParticipantId: playerMessage.visibility === "private" ? playerMessage.participantId : undefined,
+        sourceKind: playerMessage.sourceKind,
+        sourceId: playerMessage.sourceId,
+        sourceLabel: playerMessage.sourceLabel,
+      });
+
+      return {
+        promptMode,
+        reply: guardrail.reply,
+        guardrailApplied: true,
+        replyMessageId: reply,
+      };
+    }
+
     const retrieval = await retrieveDmContext(ctx, {
       playerPrompt: playerMessage.content,
       runtime,
