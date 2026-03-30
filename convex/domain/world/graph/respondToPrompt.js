@@ -17,40 +17,56 @@ function getDmVoiceId() {
   return process.env.DEEPGRAM_DM_VOICE || process.env.DEEPGRAM_VOICE || "aura-2-thalia-en";
 }
 
-function extractSpeakableChunks(buffer, force = false) {
+function countWords(text) {
+  const trimmed = text.trim();
+  if (!trimmed) {
+    return 0;
+  }
+  return trimmed.split(/\s+/).length;
+}
+
+function isSpeakableChunk(text, { minChars = 12, minWords = 3 } = {}) {
+  return text.trim().length >= minChars && countWords(text) >= minWords;
+}
+
+function extractSpeakableChunks(buffer, { force = false, eagerLead = false } = {}) {
   const chunks = [];
   let remaining = buffer;
+  const minSoftBreakLength = eagerLead ? 24 : 48;
+  const hardBreakLength = eagerLead ? 56 : 120;
+  const hardBreakFloor = eagerLead ? 28 : 56;
 
   while (remaining.length) {
     const sentenceMatch = remaining.match(/^([\s\S]*?[.!?])(\s+|$)/);
-    if (sentenceMatch && sentenceMatch[1].trim().length >= 12) {
+    if (sentenceMatch && isSpeakableChunk(sentenceMatch[1], { minChars: 12, minWords: 3 })) {
       chunks.push(sentenceMatch[1].trim());
       remaining = remaining.slice(sentenceMatch[0].length);
       continue;
     }
 
-    const softBreakIndex = remaining.search(/[;:]\s/);
-    if (softBreakIndex >= 56) {
+    const softBreakPattern = eagerLead ? /[,;:\n]\s/ : /[;:\n]\s/;
+    const softBreakIndex = remaining.search(softBreakPattern);
+    if (softBreakIndex >= minSoftBreakLength) {
       const chunk = remaining.slice(0, softBreakIndex + 1).trim();
-      if (chunk) {
+      if (isSpeakableChunk(chunk, { minChars: eagerLead ? 18 : 24, minWords: 4 })) {
         chunks.push(chunk);
       }
       remaining = remaining.slice(softBreakIndex + 1).trimStart();
       continue;
     }
 
-    if (remaining.length >= 140) {
-      const window = remaining.slice(0, 140);
+    if (remaining.length >= hardBreakLength) {
+      const window = remaining.slice(0, hardBreakLength);
       const splitAt = Math.max(window.lastIndexOf(" "), window.lastIndexOf("-"));
-      const chunk = remaining.slice(0, splitAt > 64 ? splitAt : 140).trim();
-      if (chunk) {
+      const chunk = remaining.slice(0, splitAt > hardBreakFloor ? splitAt : hardBreakLength).trim();
+      if (isSpeakableChunk(chunk, { minChars: eagerLead ? 18 : 24, minWords: 4 })) {
         chunks.push(chunk);
       }
       remaining = remaining.slice(chunk.length).trimStart();
       continue;
     }
 
-    if (force && remaining.trim()) {
+    if (force && isSpeakableChunk(remaining, { minChars: 6, minWords: 1 })) {
       chunks.push(remaining.trim());
       remaining = "";
     }
@@ -136,7 +152,7 @@ async function streamDmReply({
     if (forceText?.trim()) {
       speechBuffer += forceText;
     }
-    const { chunks, remaining } = extractSpeakableChunks(speechBuffer, true);
+    const { chunks, remaining } = extractSpeakableChunks(speechBuffer, { force: true });
     speechBuffer = remaining;
     queueSpeech(chunks);
     await speechQueue;
@@ -271,10 +287,13 @@ async function streamDmReply({
           accumulated += parsed.delta;
           flushBuffer += parsed.delta;
           speechBuffer += parsed.delta;
-          await flushChunk(false);
-          const { chunks, remaining } = extractSpeakableChunks(speechBuffer, false);
+          const { chunks, remaining } = extractSpeakableChunks(speechBuffer, {
+            force: false,
+            eagerLead: !hasQueuedSpeech,
+          });
           speechBuffer = remaining;
           queueSpeech(chunks);
+          await flushChunk(false);
         }
       }
     }

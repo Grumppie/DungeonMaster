@@ -19,6 +19,7 @@ If the world brief reads combat-heavy, the first level can open in combat. If it
 - Authoritative Convex combat with preview/confirm flow
 - Prompt-driven world seeding from the host's world brief
 - DM scene replies constrained by live map, scene, transition, and door state
+- Clause-level DM voice chunking so Deepgram can start speaking before the full reply finishes
 - Playwright E2E harness for the two-user host/join/start flow
 
 ## Stack
