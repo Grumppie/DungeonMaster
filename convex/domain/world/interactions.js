@@ -59,6 +59,10 @@ export async function applyScenePromptImpact(ctx, {
   sourceLabel,
   visibility = "private",
 }) {
+  const sceneProgressBefore = await ctx.db
+    .query("sceneProgress")
+    .withIndex("by_scene", (q) => q.eq("sceneId", scene._id))
+    .unique();
   let contribution;
   const interactable = sourceId
     ? (scene.interactables || []).find((entry) => entry.id === sourceId)
@@ -91,6 +95,7 @@ export async function applyScenePromptImpact(ctx, {
       sourceId,
       sourceLabel,
       visibility,
+      sceneProgress: sceneProgressBefore,
     });
   } else {
     contribution = await runSceneActionGraph({

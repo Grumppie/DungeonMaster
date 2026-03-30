@@ -7,7 +7,13 @@ function formatUnlock(unlock) {
     .trim();
 }
 
-export async function runInspectResolverGraph({ scene, sourceId, sourceLabel, visibility = "private" }) {
+export async function runInspectResolverGraph({
+  scene,
+  sourceId,
+  sourceLabel,
+  visibility = "private",
+  sceneProgress,
+}) {
   const interactable = (scene.interactables || []).find((entry) => entry.id === sourceId);
   const investigationRule = (scene.investigationRules || []).find((rule) => rule.sourceId === sourceId);
 
@@ -25,11 +31,15 @@ export async function runInspectResolverGraph({ scene, sourceId, sourceLabel, vi
   }
 
   const unlocks = investigationRule?.unlocks || [];
-  const summary = buildInteractionHintSummary(scene, interactable, unlocks);
+  const commitmentGain = Boolean(investigationRule?.progressDelta && investigationRule.progressDelta > 1);
+  const summary = buildInteractionHintSummary(scene, interactable, unlocks, sceneProgress, {
+    discoveryGain: true,
+    commitmentGain,
+  });
 
   return {
     discovery: true,
-    commitment: Boolean(investigationRule?.progressDelta && investigationRule.progressDelta > 1),
+    commitment: commitmentGain,
     factType: interactable.kind === "clue" ? "clue_reveal" : "investigation",
     factSummary: summary,
     revealInteractableIds: [interactable.id],

@@ -54,6 +54,7 @@ export async function resolveSceneScenarioUpdates(ctx, {
   const stallRecovery = await runStallRecoveryGraph({
     scene,
     stallCounter: currentProgress?.stallCounter || 0,
+    sceneProgress: currentProgress,
   });
 
   return {

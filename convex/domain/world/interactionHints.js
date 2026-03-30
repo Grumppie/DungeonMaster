@@ -25,6 +25,25 @@ function getSceneLandmarks(scene) {
   return buildSceneMapLayout(scene).landmarks || [];
 }
 
+function classifyHintPhase(sceneProgress, { discoveryGain = false, commitmentGain = false } = {}) {
+  const discoveryCompleted = Boolean(sceneProgress?.discoveryCompleted || discoveryGain);
+  const commitmentCompleted = Boolean(sceneProgress?.commitmentCompleted || commitmentGain);
+  const transitionUnlocked = Boolean(
+    sceneProgress?.transitionUnlocked || (discoveryCompleted && commitmentCompleted),
+  );
+
+  if (transitionUnlocked) {
+    return "exit";
+  }
+  if (commitmentCompleted) {
+    return "commit";
+  }
+  if (discoveryCompleted) {
+    return "focus";
+  }
+  return "search";
+}
+
 function getNearestLandmark(scene, position) {
   const landmarks = getSceneLandmarks(scene);
   if (!position || !landmarks.length) {
@@ -120,19 +139,33 @@ function buildAtmosphereLine(interactable, nearestLandmark) {
     : `${interactable.label} gives back a useful detail, but not the whole answer.`;
 }
 
-function buildLeadLine(lead, unlocks) {
+function buildLeadLine(lead, unlocks, phase) {
   if (!lead) {
     return null;
   }
 
+  if (phase === "search") {
+    return `It does not settle the room, but it makes the space ${lead.direction} of here feel more worth pressing on, especially around ${lead.label}.`;
+  }
+
   const unlockText = unlocks.length
     ? `The find suggests ${unlocks.map(formatUnlock).join(", ")}`
-    : "What you find does not solve the scene, but it does narrow the next check";
+    : phase === "focus"
+      ? "The room is starting to show its shape"
+      : "The room has narrowed to a more decisive line";
 
   return `${unlockText}, and the pressure of it pulls attention ${lead.direction} toward ${lead.label}.`;
 }
 
-function buildTensionLine(interactable, unlocks) {
+function buildTensionLine(interactable, unlocks, phase) {
+  if (phase === "exit") {
+    return "The path is readable now, but the party still has to choose when and how to press it.";
+  }
+
+  if (phase === "commit") {
+    return "At this point the room wants a push, not another lap of passive observation.";
+  }
+
   if (unlocks.length) {
     return "It is enough to sharpen the party's read, but not enough to remove the need for a choice.";
   }
@@ -144,19 +177,27 @@ function buildTensionLine(interactable, unlocks) {
   return "It gives you a stronger angle on the room without flattening the mystery into an answer key.";
 }
 
-export function buildInteractionHintSummary(scene, interactable, unlocks = []) {
+export function buildInteractionHintSummary(
+  scene,
+  interactable,
+  unlocks = [],
+  sceneProgress = null,
+  { discoveryGain = false, commitmentGain = false } = {},
+) {
   const nearestLandmark = getNearestLandmark(scene, interactable.position);
   const lead = pickDirectionalLead(scene, interactable, unlocks);
+  const phase = classifyHintPhase(sceneProgress, { discoveryGain, commitmentGain });
   const parts = [
     buildAtmosphereLine(interactable, nearestLandmark),
-    buildLeadLine(lead, unlocks),
-    buildTensionLine(interactable, unlocks),
+    buildLeadLine(lead, unlocks, phase),
+    buildTensionLine(interactable, unlocks, phase),
   ].filter(Boolean);
 
   return parts.join(" ");
 }
 
-export function buildStallRecoveryHint(scene) {
+export function buildStallRecoveryHint(scene, sceneProgress = null) {
+  const phase = classifyHintPhase(sceneProgress);
   const firstInteractable = (scene?.interactables || [])[0] || null;
   const lastInteractable = (scene?.interactables || []).slice(-1)[0] || null;
   const firstLandmark = getSceneLandmarks(scene)[0] || null;
@@ -168,15 +209,21 @@ export function buildStallRecoveryHint(scene) {
       lastInteractable.position.x,
       lastInteractable.position.y,
     );
-    return `The room's pressure starts to align between ${firstInteractable.label} and ${lastInteractable.label}, hinting that the meaningful push runs ${direction}.`;
+    return phase === "search"
+      ? `The room's pressure starts to align between ${firstInteractable.label} and ${lastInteractable.label}, hinting that the meaningful push runs ${direction}.`
+      : `The room is done being coy: the meaningful push now runs ${direction}, between ${firstInteractable.label} and ${lastInteractable.label}.`;
   }
 
   if (firstInteractable && firstLandmark) {
-    return `${firstInteractable.label} stands out more sharply against ${firstLandmark.name}, as if the room is quietly daring the party to test that angle next.`;
+    return phase === "search"
+      ? `${firstInteractable.label} stands out more sharply against ${firstLandmark.name}, as if the room is quietly daring the party to test that angle next.`
+      : `${firstInteractable.label} now reads like the clearest pressure point in the room, especially against ${firstLandmark.name}.`;
   }
 
   if (firstInteractable) {
-    return `${firstInteractable.label} now feels like the kind of detail the room expects the party to press on.`;
+    return phase === "search"
+      ? `${firstInteractable.label} now feels like the kind of detail the room expects the party to press on.`
+      : `${firstInteractable.label} has become the kind of detail the party should stop circling and actually test.`;
   }
 
   return "A small shift in the room makes one route feel more promising, without settling the question for the party.";

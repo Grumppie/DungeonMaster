@@ -1,13 +1,13 @@
 import { buildStallRecoveryHint } from "../interactionHints";
 
-export async function runStallRecoveryGraph({ scene, stallCounter = 0 }) {
+export async function runStallRecoveryGraph({ scene, stallCounter = 0, sceneProgress = null }) {
   const plan = scene.stallRecoveryPlan || { mode: "escalating_nudge", triggerAfterInteractions: 3 };
   if (stallCounter < plan.triggerAfterInteractions) {
     return null;
   }
 
   const cues = [
-    buildStallRecoveryHint(scene),
+    buildStallRecoveryHint(scene, sceneProgress),
     "The environment shifts just enough to imply a better angle without giving the answer away.",
     "Someone nearby reacts, making the pressure in the scene harder to ignore and harder to postpone.",
   ];
