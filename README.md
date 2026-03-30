@@ -71,6 +71,38 @@ npm run build
 
 Research and setup guidance for Codex + Playwright MCP + browser-based bug fixing lives in `docs/browser-feedback-loop.md`.
 
+## Playwright E2E
+
+Install Playwright browsers once:
+
+```bash
+npx playwright install chromium
+```
+
+Start the app locally in a separate terminal:
+
+```bash
+npm run dev
+```
+
+Bootstrap saved auth state for the host user:
+
+```bash
+npm run test:e2e:bootstrap:host
+```
+
+Bootstrap saved auth state for the guest user:
+
+```bash
+npm run test:e2e:bootstrap:guest
+```
+
+Run the two-user room flow:
+
+```bash
+npm run test:e2e
+```
+
 ## Notes
 
 - Combat resolution is authoritative in Convex.

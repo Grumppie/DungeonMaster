@@ -12,7 +12,12 @@
     "build": "vite build",
     "preview": "vite preview",
     "convex:deploy": "convex deploy",
-    "corpus:ingest": "node scripts/ingest-corpus.mjs"
+    "corpus:ingest": "node scripts/ingest-corpus.mjs",
+    "test:e2e": "playwright test --project=e2e",
+    "test:e2e:headed": "playwright test --project=e2e --headed",
+    "test:e2e:ui": "playwright test --project=e2e --ui",
+    "test:e2e:bootstrap:host": "playwright test --project=bootstrap-host --headed",
+    "test:e2e:bootstrap:guest": "playwright test --project=bootstrap-guest --headed"
   },
   "dependencies": {
     "@clerk/react": "^6.1.1",
@@ -38,9 +43,11 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@playwright/test": "^1.54.2",
     "@vitejs/plugin-react": "^5.0.4",
     "concurrently": "^9.0.1",
     "dotenv": "^16.4.7",
+    "playwright": "^1.54.2",
     "vite": "^6.2.0"
   }
 }

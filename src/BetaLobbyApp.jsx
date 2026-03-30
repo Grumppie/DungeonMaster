@@ -176,7 +176,7 @@ export default function BetaLobbyApp() {
 
           {state.error ? (
             <Card className="border-destructive/25 bg-destructive/5 shadow-sm">
-              <CardContent className="p-4">
+              <CardContent className="p-4" data-testid="app-error-banner">
                 <p className="text-sm text-destructive">{state.error}</p>
               </CardContent>
             </Card>

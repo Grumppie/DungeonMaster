@@ -112,7 +112,7 @@ export function RuntimeShell({
   }
 
   return (
-    <div className="runtime-shell">
+    <div className="runtime-shell" data-testid="runtime-shell-root">
       <RuntimeCommandDeck
         sessionTitle={session.title}
         activeScene={activeScene}

@@ -21,6 +21,14 @@ function initialsFor(name) {
     .join("");
 }
 
+function normalizeForTestId(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "unknown";
+}
+
 export function LobbyScreen({
   session,
   archetypes,
@@ -49,7 +57,9 @@ export function LobbyScreen({
               </div>
               <div className="flex flex-wrap gap-2">
                 <Badge variant="outline" className="rounded-full px-3 py-1">{session.roomPrivacy}</Badge>
-                <Badge variant="outline" className="rounded-full px-3 py-1">Code {session.joinCode}</Badge>
+                <Badge variant="outline" className="rounded-full px-3 py-1" data-testid="session-join-code">
+                  Code {session.joinCode}
+                </Badge>
                 <Badge variant="outline" className="rounded-full px-3 py-1">
                   {session.currentPlayerCount}/{session.maxPlayers}
                 </Badge>
@@ -59,7 +69,12 @@ export function LobbyScreen({
           <CardContent className="grid gap-4">
             <div className="grid gap-2">
               <label className="text-sm font-medium text-foreground">Invite link</label>
-              <Input readOnly value={shareUrl} className="h-11 rounded-2xl bg-background/70" />
+              <Input
+                readOnly
+                value={shareUrl}
+                className="h-11 rounded-2xl bg-background/70"
+                data-testid="invite-link-input"
+              />
             </div>
             <div className="rounded-3xl border border-border/60 bg-muted/20 p-4 text-sm text-muted-foreground">
               Only character names are visible to other players.
@@ -71,6 +86,7 @@ export function LobbyScreen({
                 className="h-12 rounded-2xl"
                 onClick={onStartAdventure}
                 disabled={!everyoneReady || busy === "start"}
+                data-testid="start-run-button"
               >
                 {busy === "start" ? "Building run..." : "Start DM-generated run"}
               </Button>
@@ -91,11 +107,12 @@ export function LobbyScreen({
               Anonymous players are represented only by character identity and archetype readiness.
             </CardDescription>
           </CardHeader>
-          <CardContent className="grid gap-3">
+          <CardContent className="grid gap-3" data-testid="participant-list">
             {session.participants.map((participant) => (
               <article
                 key={participant._id}
                 className="flex items-center justify-between gap-4 rounded-3xl border border-border/60 bg-background/70 p-4"
+                data-testid={`participant-card-${normalizeForTestId(participant.visibleName)}`}
               >
                 <div className="flex items-center gap-3">
                   <Avatar className="size-12 border border-border/60">
@@ -155,6 +172,7 @@ export function LobbyScreen({
                   className="mt-auto rounded-2xl"
                   onClick={() => onChooseArchetype(archetype.key)}
                   disabled={busy.startsWith("pick:")}
+                  data-testid={`pick-archetype-${archetype.key}`}
                 >
                   Pick {archetype.name}
                 </Button>
