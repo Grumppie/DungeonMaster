@@ -41,12 +41,14 @@ export function RuntimeShell({
   const [sheetOpen, setSheetOpen] = useState(false);
   const [showDmHistory, setShowDmHistory] = useState(false);
   const [showPartyHistory, setShowPartyHistory] = useState(false);
+  const [dmPlaybackRequest, setDmPlaybackRequest] = useState(null);
   const promptInputRef = useRef(null);
 
   const {
     activeScene,
     latestDmMessage,
     recentDmMessages,
+    activeSceneOpeningMessage,
     dmHistoryItems,
     partyHistory,
     sceneFacts,
@@ -85,6 +87,21 @@ export function RuntimeShell({
   }
 
   const activeTranscript = sceneRuntime?.liveTranscript?.slice(-1)?.[0] || null;
+
+  function handlePlaySceneMessage(message) {
+    if (!message?.content?.trim()) {
+      return;
+    }
+    setDmPlaybackRequest({
+      id: `${message._id || "dm"}-${Date.now()}`,
+      message: {
+        _id: message._id,
+        createdAt: message.createdAt,
+        speakerLabel: message.speakerLabel || "DM",
+        content: message.content,
+      },
+    });
+  }
 
   if (activePage === "rules") {
     return (
@@ -136,10 +153,16 @@ export function RuntimeShell({
         onPromptSubmit={handlePromptSubmit}
         onOpenDmHistory={() => setShowDmHistory(true)}
         onOpenPartyHistory={() => setShowPartyHistory(true)}
+        onPlaySceneMessage={handlePlaySceneMessage}
         onShareSceneMessage={onShareSceneMessage}
       />
 
-      <AudioBroadcastPlayer history={transcriptAudioHistory} />
+      <AudioBroadcastPlayer
+        history={transcriptAudioHistory}
+        activeSceneId={activeScene?._id}
+        sceneOpeningMessage={activeSceneOpeningMessage}
+        playRequest={dmPlaybackRequest}
+      />
 
       <SelectionPopover
         selectedCell={selectedCell}

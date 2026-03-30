@@ -12,6 +12,15 @@ export function selectRecentDmMessages(sceneRuntime, limit = 3) {
   return selectDmHistory(sceneRuntime).slice(-limit).reverse();
 }
 
+export function selectActiveSceneOpeningMessage(sceneRuntime, activeSceneId) {
+  if (!activeSceneId) {
+    return null;
+  }
+  return (sceneRuntime?.messages || []).find(
+    (message) => message.sceneId === activeSceneId && message.sourceKind === "scene_opening" && message.content?.trim(),
+  ) || null;
+}
+
 export function selectTranscriptAudioHistory(sceneRuntime) {
   return (sceneRuntime?.transcriptHistory || []).filter((entry) => entry.audioUrl);
 }

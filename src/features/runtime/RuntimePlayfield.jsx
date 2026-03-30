@@ -26,6 +26,7 @@ export function RuntimePlayfield({
   onPromptSubmit,
   onOpenDmHistory,
   onOpenPartyHistory,
+  onPlaySceneMessage,
   onShareSceneMessage,
 }) {
   return (
@@ -59,6 +60,7 @@ export function RuntimePlayfield({
           onPromptSubmit={onPromptSubmit}
           onOpenDmHistory={onOpenDmHistory}
           onOpenPartyHistory={onOpenPartyHistory}
+          onPlaySceneMessage={onPlaySceneMessage}
           onShareSceneMessage={onShareSceneMessage}
         />
       </div>

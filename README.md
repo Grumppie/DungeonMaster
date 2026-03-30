@@ -126,6 +126,10 @@ $env:PLAYWRIGHT_E2E_GUEST_PASSWORD="guest-password"
 
 Research and setup notes for the Codex + Playwright MCP workflow live in `docs/browser-feedback-loop.md`.
 
+## Retrieval Plan
+
+The Convex vector-store rollout plan lives in `docs/convex-vector-store-plan.md`.
+
 ## Notes
 
 - Combat legality is authoritative in the combat engine and now has deterministic guardrails in the scene-prompt lane for off-sheet ability requests.

@@ -7,7 +7,7 @@ function shouldCollapseMessage(content) {
   return normalized.length > 220 || normalized.includes("\n");
 }
 
-export function LatestDmPanel({ recentDmMessages = [], latestDmMessage, dmStatus, onShare }) {
+export function LatestDmPanel({ recentDmMessages = [], latestDmMessage, dmStatus, onPlay, onShare }) {
   const [expandedMessageIds, setExpandedMessageIds] = useState({});
 
   const messages = useMemo(() => {
@@ -46,17 +46,28 @@ export function LatestDmPanel({ recentDmMessages = [], latestDmMessage, dmStatus
             <article key={messageId} className="runtime-transcript-item latest">
               <div className="runtime-transcript-card-head">
                 <strong>{message.speakerLabel || "DM"}</strong>
-                {message.visibility === "private" ? (
+                <div className="runtime-transcript-card-actions">
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
                     className="rounded-full"
-                    onClick={() => onShare?.(message._id)}
+                    onClick={() => onPlay?.(message)}
                   >
-                    Share with party
+                    Play reply
                   </Button>
-                ) : null}
+                  {message.visibility === "private" ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="rounded-full"
+                      onClick={() => onShare?.(message._id)}
+                    >
+                      Share with party
+                    </Button>
+                  ) : null}
+                </div>
               </div>
               <p className={`runtime-transcript-copy ${canCollapse && !isExpanded ? "clamped" : ""}`}>
                 {message.content}

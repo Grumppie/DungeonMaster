@@ -14,6 +14,7 @@ export function DmCommandPanel({
   onPromptSubmit,
   onOpenDmHistory,
   onOpenPartyHistory,
+  onPlaySceneMessage,
   onShareSceneMessage,
 }) {
   return (
@@ -51,6 +52,7 @@ export function DmCommandPanel({
         recentDmMessages={recentDmMessages}
         latestDmMessage={latestDmMessage}
         dmStatus={dmStatus}
+        onPlay={onPlaySceneMessage}
         onShare={onShareSceneMessage}
       />
     </section>

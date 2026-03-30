@@ -6,6 +6,7 @@ import {
   selectPartyHistory,
 } from "./runtimeSelectors";
 import {
+  selectActiveSceneOpeningMessage,
   selectDmHistory,
   selectLatestDmMessage,
   selectRecentDmMessages,
@@ -25,6 +26,10 @@ export function useRuntimeController({ session, adventure, sceneRuntime }) {
   const recentDmMessages = useMemo(
     () => selectRecentDmMessages(sceneRuntime),
     [sceneRuntime],
+  );
+  const activeSceneOpeningMessage = useMemo(
+    () => selectActiveSceneOpeningMessage(sceneRuntime, activeScene?._id),
+    [activeScene?._id, sceneRuntime],
   );
   const dmHistoryItems = useMemo(
     () => selectDmHistory(sceneRuntime),
@@ -51,6 +56,7 @@ export function useRuntimeController({ session, adventure, sceneRuntime }) {
     activeScene,
     latestDmMessage,
     recentDmMessages,
+    activeSceneOpeningMessage,
     dmHistoryItems,
     partyHistory,
     sceneFacts,
