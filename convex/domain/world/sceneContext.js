@@ -108,6 +108,16 @@ function buildTransitionState(mapInstance) {
   }));
 }
 
+function buildDoorState(mapInstance) {
+  return (mapInstance?.cells || [])
+    .filter((cell) => cell.terrainKind === "doorway")
+    .map((cell) => ({
+      x: cell.x,
+      y: cell.y,
+      doorState: cell.doorState || "closed",
+    }));
+}
+
 export function buildAuthoritativeSceneContext({
   run,
   activeScene,
@@ -148,6 +158,7 @@ export function buildAuthoritativeSceneContext({
       width: mapInstance.width,
       height: mapInstance.height,
       terrainSummary: summarizeTerrain(mapInstance),
+      doorways: buildDoorState(mapInstance),
       landmarks: (mapInstance.landmarks || []).map((landmark) => ({
         landmarkId: landmark.landmarkId,
         name: landmark.name,

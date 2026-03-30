@@ -13,6 +13,7 @@ function buildDmMessagePayload(args) {
     messageType: args.messageType,
     sourceKind: args.sourceKind,
     sourceId: args.sourceId,
+    sourceLabel: args.sourceLabel,
     landmarkRef: undefined,
     sceneVersion: 1,
   };

@@ -217,6 +217,32 @@ function buildPromptFocusBlock({ runtime, sourceKind, sourceId, sourceLabel }) {
   return focusLines.join("\n");
 }
 
+function buildDoorwayConstraintBlock(sceneContext) {
+  if (!sceneContext) {
+    return "Door state is unavailable. Stay conservative and do not narrate crossing into a new area.";
+  }
+
+  const doorways = sceneContext.map.doorways || [];
+  const transitions = sceneContext.transitions || [];
+
+  return [
+    `Doorway cells: ${
+      doorways.length
+        ? doorways.map((entry) => `(${entry.x},${entry.y})=${entry.doorState}`).join("; ")
+        : "none"
+    }.`,
+    `Transition anchors: ${
+      transitions.length
+        ? transitions.map((entry) => `${entry.label} at (${entry.x},${entry.y}) is ${entry.isActive ? "open" : "locked"}`).join("; ")
+        : "none"
+    }.`,
+    "A locked anchor means the character is still in the current room.",
+    "A closed doorway means it has not swung open on the map yet.",
+    "Do not narrate entering a corridor, new chamber, or hall beyond a door unless the transition anchor is open and the scene state has actually advanced.",
+    "If a door is being tested while still closed or locked, describe resistance, partial progress, noise, or readiness to push, but keep the character in the present map.",
+  ].join("\n");
+}
+
 function buildSceneContextBlock(sceneContext) {
   if (!sceneContext) {
     return "Scene context is unavailable. Stay conservative and only restate visible facts from recent transcript.";
@@ -279,6 +305,7 @@ function buildSceneContextBlock(sceneContext) {
     `Pressure: ${sceneContext.scene.pressure} (${sceneContext.scene.pressureTier}).`,
     `Map footprint: ${sceneContext.map.width} by ${sceneContext.map.height}.`,
     `Terrain summary: ${sceneContext.map.terrainSummary.join(", ") || "none listed"}.`,
+    `Doorway states: ${sceneContext.map.doorways.map((entry) => `(${entry.x},${entry.y})=${entry.doorState}`).join("; ") || "none listed"}.`,
     `Named landmarks: ${sceneContext.map.landmarks.map((entry) => entry.name).join("; ") || "none listed"}.`,
     `Changed tiles: ${sceneContext.map.changedTiles.join(", ") || "none"}.`,
     `Scene gates: discovery ${sceneContext.gates.discovery}; commitment ${sceneContext.gates.commitment}; exit ${sceneContext.gates.transition}; stall ${sceneContext.gates.stallCounter}; hints ${sceneContext.gates.hintBudget}.`,
@@ -333,6 +360,7 @@ export function buildSystemPrompt({
     `Player name: ${playerName}.`,
     `Combat snapshot: ${summarizeCombat(combat)}`,
     `Prompt focus:\n${buildPromptFocusBlock({ runtime, sourceKind, sourceId, sourceLabel })}`,
+    `Doorway and transition constraints:\n${buildDoorwayConstraintBlock(runtime.sceneContext)}`,
     `Authoritative scene context:\n${buildSceneContextBlock(runtime.sceneContext)}`,
     `Local canon retrieved for this prompt:\n${buildRetrievedContext(retrieval)}`,
     recentMessages ? `Recent transcript:\n${recentMessages}` : "Recent transcript: none.",

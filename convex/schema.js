@@ -221,6 +221,7 @@ export default defineSchema({
     messageType: sceneMessageType,
     sourceKind: v.optional(v.string()),
     sourceId: v.optional(v.union(v.id("adventureScenes"), v.id("sessionParticipants"), v.string())),
+    sourceLabel: v.optional(v.string()),
     landmarkRef: v.optional(v.string()),
     sceneVersion: v.optional(v.number()),
     content: v.string(),

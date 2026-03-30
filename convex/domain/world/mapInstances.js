@@ -123,6 +123,20 @@ export async function applyMapInstanceDelta(
         blockerReason: undefined,
       }))
     : mapInstance.transitionAnchors;
+  const nextCells = activateTransitionAnchors
+    ? (mapInstance.cells || []).map((cell) => {
+        const matchingAnchor = (mapInstance.transitionAnchors || []).find(
+          (anchor) => anchor.x === cell.x && anchor.y === cell.y,
+        );
+        if (!matchingAnchor) {
+          return cell;
+        }
+        return {
+          ...cell,
+          doorState: "open",
+        };
+      })
+    : mapInstance.cells;
 
   await ctx.db.patch(mapInstance._id, {
     version: (mapInstance.version || 1) + 1,
@@ -130,6 +144,7 @@ export async function applyMapInstanceDelta(
       ...(mapInstance.revealedInteractableIds || []),
       ...revealedInteractableIds,
     ]),
+    cells: nextCells,
     changedCells: unique([...(mapInstance.changedCells || []), ...changedCells]),
     transitionAnchors: nextTransitionAnchors,
     updatedAt: Date.now(),

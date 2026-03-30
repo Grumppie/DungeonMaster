@@ -326,6 +326,7 @@ export async function respondToPromptAction(ctx, { sessionId, playerMessageId, p
       targetParticipantId: playerMessage.visibility === "private" ? playerMessage.participantId : undefined,
       sourceKind: playerMessage.sourceKind,
       sourceId: playerMessage.sourceId,
+      sourceLabel: playerMessage.sourceLabel,
     });
     await ctx.runMutation(internal.sceneRuntime.setDmStatus, {
       sessionId,

@@ -149,6 +149,7 @@ export const persistDmReply = internalMutation({
     targetParticipantId: v.optional(v.id("sessionParticipants")),
     sourceKind: v.optional(v.string()),
     sourceId: v.optional(v.string()),
+    sourceLabel: v.optional(v.string()),
   },
   handler: async (ctx, args) => persistDmReplyMessage(ctx, args),
 });
@@ -163,6 +164,7 @@ export const createDmReplyDraft = internalMutation({
     targetParticipantId: v.optional(v.id("sessionParticipants")),
     sourceKind: v.optional(v.string()),
     sourceId: v.optional(v.string()),
+    sourceLabel: v.optional(v.string()),
   },
   handler: async (ctx, args) => createDmReplyDraftMessage(ctx, args),
 });

@@ -34,6 +34,7 @@ export async function submitPlayerPromptForParticipant(ctx, {
     messageType: "prompt",
     sourceKind,
     sourceId,
+    sourceLabel,
     landmarkRef: undefined,
     sceneVersion: 1,
     content: trimmedContent,

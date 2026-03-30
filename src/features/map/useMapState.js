@@ -63,6 +63,9 @@ function getInteractableMarker(interactable) {
 
 function getTerrainClass(templateCell) {
   const terrainKind = templateCell?.terrainKind || templateCell?.kind;
+  if (terrainKind === TERRAIN_KINDS.DOORWAY && templateCell?.doorState === "open") {
+    return "doorway-open";
+  }
   switch (terrainKind) {
     case TERRAIN_KINDS.ROAD:
     case TERRAIN_KINDS.TRAIL:
@@ -100,7 +103,7 @@ function getTerrainGlyph(templateCell) {
     case TERRAIN_KINDS.CLIFF:
       return "cliff";
     case TERRAIN_KINDS.DOORWAY:
-      return "door";
+      return templateCell?.doorState === "open" ? "open" : "door";
     case TERRAIN_KINDS.SIGNPOST:
       return "sign";
     case TERRAIN_KINDS.TORCH:
